@@ -1,0 +1,23 @@
+﻿@model List<vidosa.Areas.admin.Models.Log>
+
+@if(Model.Count <= 0)
+{
+    <span>There is nothing to show for the selected type</span>
+}
+
+@for (int i = 0; i < Model.Count; i++)
+{
+    <tr>
+        <td>@Model[i].Title</td>
+        <td>@Model[i].DateCreated</td>
+        <td>@Model[i].DateUpdated</td>
+        <td>@Model[i].UrlId</td>
+        <td>
+            <a class="btn btn-primary" href=@string.Format("{0}", Model[i].IsPost ? string.Format("/admin/home/getpost?purl={0}", Model[i].UrlId) : string.Format("/video/editpreview?v={0}", Model[i].UrlId)) data-ajax="true" data-ajax-success="loadSuccess"
+               data-ajax-method="get" data-ajax-mode="replace"
+               data-ajax-update="#container" data-ajax-begin="beforeasyncCall">Edit</a> |
+            <a class="btn btn-info" href=@string.Format("{0}", Model[i].IsPost ? string.Format("/blog/getpost?purl={0}", Model[i].UrlId) : string.Format("/video/player?v={0}", Model[i].UrlId)) data-ajax="true" data-ajax-begin="beforeasyncCall"
+               data-ajax-method="get" data-ajax-mode="replace" data-ajax-success="loadSuccess" data-ajax-update="#container" target="_blank">Preview</a> | <a class="btn btn-danger" href=@string.Format("{0}", Model[i].IsPost ? string.Format("/admin/Home/DeletePost?purl={0}&IsDeleted={1}", Model[i].UrlId, Model[i].IsDeleted ? false : true) : string.Format("/video/DeleteVideo?v={0}&IsDeleted={1}", Model[i].UrlId, Model[i].IsDeleted)) title="Delete Post">@string.Format("{0}", Model[i].IsDeleted == true ? "UnDelete" : "Delete") </a>
+        </td>
+    </tr>
+}

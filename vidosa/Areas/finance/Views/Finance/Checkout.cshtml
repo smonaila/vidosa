@@ -1,0 +1,128 @@
+﻿@model IEnumerable<vidosa.Models.Video>
+@using vidosa.Models
+@{
+    ViewBag.Title = "Checkout";
+    var counter = Model.ToList().Count;
+    var CheckedVids = Model.ToList();
+}
+
+<div class="modal fade" id="course-preview">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width:80%">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title">Course Preview</h4>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div id="preview-container">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-1"></div>
+<div class="col-lg-10" style="border:1px solid red;">
+    @using (VidosaContext vidosaContext = new VidosaContext())
+    {
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <div class="panel-group" id="accordion">
+                    @for (var i = 0; i < counter; i++)
+                    {
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse_@i">
+                                        @CheckedVids[i].Title <span class="caret"></span>
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="collapse_@i" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    @Html.Raw(HttpUtility.HtmlDecode(@CheckedVids[i].VideoDetails))
+                                    <a href="~/Video/PreviewPlayer?v=@CheckedVids[i].VideoId&ispartial=true" title="Preview - @CheckedVids[i].Title" class="anchor-preview" data-ajax="true" data-ajax-loading="#async-page-loading-id"
+                                       data-ajax-method="GET" data-ajax-update="#preview-container"
+                                       data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">Preview</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4"><b>Product Name</b></div>
+            <div class="col-lg-4"><b>Price</b></div>
+        </div>
+        foreach (Video course in Model)
+        {
+            <div class="row">
+                <div class="col-lg-4">@course.Title</div>
+                <div class="col-lg-4"><b>R @course.Price</b></div>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-4"><h4>Total:</h4></div>
+            <div class="col-lg-4">
+                <h5>
+                    <span>R</span>
+                    @{
+                        decimal price = 0.00m;
+                    }
+                    @foreach (Video vid in Model)
+                    {
+                        price += vid.Price;
+                    }
+                    @price
+                </h5>
+            </div>
+            <div class="col-lg-4">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4"></div>
+            <div class="col-lg-4">
+                @foreach (Video video in Model)
+                {
+                    if (video.IsSubscription)
+                    {
+                        ApplicationUser applicationUser = vidosaContext.Users.Where(pu =>
+                        pu.Email.Equals(User.Identity.Name)).FirstOrDefault();
+
+                        if (!(applicationUser is null))
+                        {
+
+                        }
+                    }
+                }
+                <a href="/finance/finance/OnceOffPayment?checkedoutvideos=@ViewBag.videoIds" title="Confirm Order"
+                   class="confirm-order">Confirm Order</a>
+            </div>
+            <div class="col-lg-4"></div>
+        </div>
+    }
+</div>
+<div class="col-lg-1"></div>
+@if (ViewBag.IsAjax)
+{
+    <input type="hidden" value="@ViewBag.Url" id="ajaxurl" />
+}
+<script>
+    $(document).ready(function () {
+        $(".anchor-preview").on("click", function () {
+            $("#course-preview").modal("show");
+        })
+
+        $("#course-preview").on("hidden.bs.modal", function () {
+            window.beforeasyncCall();
+            $("#preview-container").html("");
+        })
+    })
+</script>

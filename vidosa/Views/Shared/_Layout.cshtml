@@ -1,0 +1,576 @@
+﻿@using vidosa.Models;
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@ViewBag.Author" />
+    <meta name="keywords" content="@ViewBag.Keywords" />
+    <meta name="description" content="@ViewBag.Description" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <meta name="content" content="@ViewBag.Metadata" />
+
+    @Styles.Render("~/css/plugins")
+    @Styles.Render("~/css/customs")
+</head>
+<body>
+    @using (VidosaContext Context = new VidosaContext())
+    {
+        var IpAddress = Request.ServerVariables["REMOTE_ADDR"];
+        if ((Context.Emails.Where(e => e.IpAddress == IpAddress).FirstOrDefault() is null))
+        {
+            if (!Utility.IsCrawlbot(Request))
+            {
+                <div class="modal fade" id="coursenewsletter">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="width:80%">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title">Subscribe For Updates</h4>
+                            </div>
+                            <div class="modal-body" id="modal-body">
+                                <div class="form-container-newsletter">
+                                    <p>
+                                        For updates on the progress of this site please subscribe to our news letter.
+                                    </p>
+                                    <p>
+                                        - We respect your privacy and understand how annoying mail spam can be,
+                                        therefore we will never share your email with anyone.
+                                    </p>
+                                    @using (Ajax.BeginForm("NewsLetter", "Account", null,
+                                       new AjaxOptions()
+                                       {
+                                           HttpMethod = "post",
+                                           InsertionMode = InsertionMode.Replace,
+                                           UpdateTargetId = "modal-body"
+                                       },
+                                       new
+                                       {
+                                           @class = "form-inline",
+                                           display = "inline",
+                                           style = "width:100%"
+                                       }))
+                                    {
+                                        <div class="form-group" style="width:98%;">
+                                            @Html.TextBox("firstname", null,
+                                              new
+                                              {
+                                                  @class= "form-control",
+                                                  style = "margin-bottom:3%;width:98%",
+                                                  placeholder = "First Name",
+                                                  data_val="true",
+                                                  data_val_FullName="Your name is required",
+                                                  data_val_required="First Name is required"
+                                              })
+                                            <span class="text-danger field-validation-error"
+                                                  data-valmsg-for="firstname"
+                                                  data-valmsg-replace="true">
+                                                <span for="firstname"></span>
+                                            </span>
+                                        </div>
+                                        <br />
+                                        <div class="form-group" style="width:98%;">
+                                            @Html.TextBox("email", null,
+                                              new
+                                              {
+                                                  @class="form-control",
+                                                  style ="margin-bottom:3%;width:98%;",
+                                                  placeholder="Email",
+                                                  data_val="true",
+                                                  data_val_required="The email is required",
+                                                  data_val_email="Invalid email"
+                                              })
+                                            <span class="text-danger field-validation-error"
+                                                  data-valmsg-for="email"
+                                                  data-valmsg-replace="true">
+                                                <span for="email"></span>
+                                            </span>
+                                        </div>
+                                        <input type="submit" value="Subscribe" class="btn-primary" style="padding:3%;width:97%;margin-bottom:3%;background-color: orange;border: none;" />
+                                    }
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">No Thanks!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+    <div class="async-page-loading" id="async-page-loading-id">
+        <div class="sliding-menu col-xs-4 col-sm-4 col-md-3 col-lg-3">
+            <span class="glyphicon glyphicon-remove"></span>
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <ul class="menuitem">
+                    @if (!Utility.IsCrawlbot(Request))
+                    {
+                        <li>
+                            <a href="/Home/Index"
+                               title="Home - "
+                               data-ajax="true"
+                               data-ajax-method="GET" data-ajax-update="#container"
+                               data-ajax-mode="replace" data-ajax-begin="beforeasyncCall"
+                               data-ajax-success="loadSuccess">
+                                Home
+                                @*<div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                        <span class="glyphicon glyphicon-home"></span>
+                    </div>*@
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/Home/Contact"
+                               title="Contact - "
+                               data-ajax="true"
+                               data-ajax-method="GET" data-ajax-update="#container"
+                               data-ajax-mode="replace"
+                               data-ajax-success="loadSuccess">
+                                Contact
+                                @*<div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                        <span class="glyphicon glyphicon-phone"></span>
+                    </div>*@
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/Home/About"
+                               title="About - "
+                               data-ajax="true"
+                               data-ajax-method="GET" data-ajax-update="#container"
+                               data-ajax-mode="replace"
+                               data-ajax-success="loadSuccess">
+                                About
+                                @*<div class="col-lg-10 col-md-10 col-xs-10 col-sm-10">
+
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-xs-2 col-sm-2">
+                        <span class="glyphicon glyphicon-inbox"></span>
+                    </div>*@
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/Blog/GetPosts"
+                               title="About - "
+                               data-ajax="true"
+                               data-ajax-method="GET" data-ajax-update="#container"
+                               data-ajax-mode="replace"
+                               data-ajax-success="loadSuccess">
+                                Blog
+                                @*<div class="col-lg-10 col-md-10 col-xs-10 col-sm-10">
+
+                    </div>
+                    <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                        <span class="glyphicon glyphicon-inbox"></span>
+                    </div>*@
+                            </a>
+                        </li>
+                        <li>
+                            <span class="glyphicon glyphicon-upload"></span>
+                            @Ajax.ActionLink("Video", "FileToUpload", "Video",
+                            new
+                            {
+                                ispartial = true
+                            },
+                            new AjaxOptions()
+                            {
+                                HttpMethod = "GET",
+                                UpdateTargetId = "container",
+                                OnBegin = "beforeasyncCall",
+                                OnSuccess= "loadSuccess"
+                            })
+                        </li>
+                    }
+                    else
+                    {
+
+                    }
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="navbar navbar-inverse navbar-fixed-top nav-custom-bar">
+        <div class="row header-row">
+            <div class="col-sm-2 col-lg-2 col-md-1 col-xs-2 ln-logo">
+                @Ajax.ActionLink("Vidosa", "Index", "Home",
+                new
+                {
+                    ispartial=false,
+                },
+                new AjaxOptions()
+                {
+                    UpdateTargetId="container",
+                    HttpMethod ="GET",
+                    InsertionMode=InsertionMode.Replace,
+                    OnBegin="beforeasyncCall",
+                    OnSuccess="loadSuccess"
+                },
+                new
+                {
+                    @class ="navbar-brand",
+                    id="application_name"
+                })
+                <span class="glyphicon glyphicon-signal"></span>
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="col-sm-5 col-md-6 col-xs-10 col-lg-6 searchbar-container">
+                <div class="col-lg-2 col-md-2 col-sm-2 des-menu-toggler-con">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <div id="menu" class="dropdown-menu" style="color:black;position:absolute;background-color:white">
+                        <ul class="menuitem">
+                            <li>
+                                <span class="glyphicon glyphicon-home"></span>
+                                @Ajax.ActionLink("Home", "Index", "Home",
+                                new
+                                {
+                                    ispartial = true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                    
+                                })
+                            </li>
+                            <li>
+                                <span class="glyphicon glyphicon-phone"></span>
+                                @Ajax.ActionLink("Contact", "Contact", "Home",
+                                new
+                                {
+                                    ispartial=true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                    
+                                })
+                            </li>
+                            <li>
+                                <span class="glyphicon glyphicon-inbox"></span>
+                                @Ajax.ActionLink("About", "About", "Home",
+                                new
+                                {
+                                    ispartial = true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                    
+                                    OnSuccess= "loadSuccess"
+                                })
+                            </li>
+                            <li>
+                                <span class="glyphicon glyphicon-inbox"></span>
+                                @Ajax.ActionLink("Blog", "GetPosts", "Blog",
+                                new
+                                {
+                                    ispartial = true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                    OnBegin = "beforeasyncCall",
+                                    OnSuccess= "loadSuccess"
+                                })
+                            </li>
+                            <li>
+                                <span class="glyphicon glyphicon-upload"></span>
+                                @Ajax.ActionLink("Video", "FileToUpload", "Video",
+                                new
+                                {
+                                    ispartial = true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                    OnSuccess= "loadSuccess"
+                                })
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12 search-input-con">
+                    <form role="form" id="search-form" name="search-form">
+                        <div class="form-group has-feedback">
+                            <input type="text" class="form-control" placeholder="Search" id="searchbar" name="searchbar" />
+                            <button type="button" class="form-control-feedback btn btn-primary glyphicon glyphicon-filter dropdown-toggle search-options-toggle" id="searchoptions" data-toggle="dropdown"></button>
+                            <div class="dropdown-menu custom-dropdown-menu">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" value="checked" name="all" checked> All</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" value="checked" name="blog_posts" checked> Blog Posts</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label><input type="checkbox" value="checked" name="videos" checked> Video</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-6" id="more-option-container" style="padding:0">
+                <div class="col-lg-12 col-xs-6 col-sm-12 col-md-12 vdm-loginout-wrapper">
+                    <ul class="loginout-ul">
+                        @if (Context.User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <a href="/Account/Logout" title="Logout of the site"
+                                   data-ajax="true"
+                                   data-ajax-method="GET" data-ajax-update="#container"
+                                   data-ajax-success="loadSuccess" data-ajax-mode="replace" id="loginAnchor">
+                                    <div class="row vdm-lio-main-wrapper">
+                                        <div class="col-sm-4 col-xs-2 col-lg-6 vdm-glyphicon-wrapper">
+                                            <div class="btn btn-sm">
+                                                <span class="glyphicon glyphicon-log-out"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-8 col-xs-2 col-lg-6 loginout-txt">
+                                            Logout
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <a href="/Account/Login" title="Login of the site"
+                                   data-ajax="true"
+                                   data-ajax-method="GET" data-ajax-update="#container"
+                                   data-ajax-success="loadSuccess" data-ajax-mode="replace" id="loginAnchor">
+                                    <div class="row vdm-lio-main-wrapper">
+                                        <div class="col-sm-4 col-xs-2 col-lg-6 vdm-glyphicon-wrapper">
+                                            <div class="btn btn-sm">
+                                                <span class="glyphicon glyphicon-log-in"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-8 col-xs-2 col-lg-6 loginout-txt">
+                                            Login
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-4 mobile-menu-container">
+                    @*<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                    Menu <span class="glyphicon glyphicon-chevron-down"></span>
+                </button>*@
+                    <div id="menu" class="dropdown-menu" style="color:black;position:absolute;background-color:white">
+                        <ul class="menuitem">
+                            <li>
+                                <span class="glyphicon glyphicon-home"></span>
+                                @Ajax.ActionLink("Home", "Index", "Home",
+                                new
+                                {
+                                    ispartial = true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                    OnBegin = "beforeasyncCall"
+                                })
+                            </li>
+                            <li>
+                                <span class="glyphicon glyphicon-phone"></span>
+                                @Ajax.ActionLink("Contact", "Contact", "Home",
+                                new
+                                {
+                                    ispartial=true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                    OnBegin = "beforeasyncCall"
+                                })
+                            </li>
+                            <li>
+                                <span class="glyphicon glyphicon-inbox"></span>
+                                @Ajax.ActionLink("About", "About", "Home",
+                                new
+                                {
+                                    ispartial = true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                })
+                            </li>
+                            <li>
+                                <span class="glyphicon glyphicon-inbox"></span>
+                                @Ajax.ActionLink("Articles", "Articles", "Home",
+                                new
+                                {
+                                    ispartial = true
+                                },
+                                new AjaxOptions()
+                                {
+                                    HttpMethod = "GET",
+                                    UpdateTargetId = "container",
+                                })
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-xs-3 col-sm-1 col-md-2 upgrade-to-premium-con">
+                @using (VidosaContext Context = new VidosaContext())
+                {
+                    if (User.Identity.IsAuthenticated && !Context.PremiumSubs.ToList().Exists(pu => pu.Username == User.Identity.Name))
+                    {
+                        <a href="/finance/finance/Index" data-ajax="true" data-ajax-method="GET"
+                           data-ajax-success="loadSuccess"
+                           data-ajax-update="#container"
+                           data-ajax-mode="replace" title="Upgrade to Premium"
+                           class="upgrade-to-premium" data-ajax-begin="beforeasyncCall" id="btnpremium">Upgrade</a>
+                    }
+                }
+            </div>
+            <div class="col-lg-1 col-xs-1 btn-toggle-search-wrap">
+                <button class="btn btn-sm btn-toggle-search">
+                    <span class="glyphicon glyphicon-arrow-right" id="leftarrowicon"></span>
+                    <span class="glyphicon glyphicon-search" id="searchicon"></span>
+                </button>
+            </div>
+            <div class="col-lg-1 col-lg-offset-1 col-xs-1 col-md-3 col-sm-2 vdm-dashboard-link-con">
+                <a href="/admin/home" title="Dashboard Page"
+                data-ajax="true"
+                data-ajax-method="GET" data-ajax-mode="replace"
+                data-ajax-update="#container" data-ajax-success="loadSuccess"><span class="glyphicon glyphicon-dashboard"></span> Dashboard</a>
+            </div>
+        </div>
+    </div>
+    <div class="container custom-container" id="container">
+        @RenderBody()
+    </div>
+    <hr />
+    <footer>
+        <div class="container">
+            <div class="col-lg-3 col-xs-12 col-md-3 col-sm-3">
+                <h4>Vidosa (pty) ltd</h4>
+                <p>
+                    Vidosa is an online video course which is dedicated to providing free and payed video.
+                </p>
+            </div>
+            <div class="col-lg-3 col-xs-12 col-md-3 col-sm-3">
+                <h4>Available Courses</h4>
+                <ul class="vdm-ava-courses-ul">
+                    <li>Introduction to Programming - C#</li>
+                    <li>Javascript</li>
+                    <li>JQuery</li>
+                    <li>ASP.NET</li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-xs-12 col-md-3 col-sm-3">
+                <h4>Contacts</h4>
+                <address>
+                    3 Cres Fick Street, Suidroord<br>
+                    Johannesburg South, 2091<br>
+                </address>
+                <span class="glyphicon glyphicon-phone"></span>: <span>0835339948</span>
+                <div class="social-media-img">
+                    <span>Social Media</span><br />
+                    <a href="https://web.facebook.com/vidosa.edu.5" target="_blank" title="Visit our Facebook Page">
+                        <img src="~/Images/facebook.jpg" alt="Visit our Facebook Page" title="Visit our Facebook Page" />
+                    </a>
+                    <a href="https://www.youtube.com/channel/UCkDZyDhTA05PdYwPnnyEejg?view_as=subscriber" target="_blank" title="Visit our Youtube Channel">
+                        <img src="~/Images/youtube.jpg" alt="Visit our Youtube Channel" title="Visit our Youtube Channel" />
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-xs-12 col-md-3 col-sm-3" id="subscribe-form">
+                <h4></h4>
+                <p>for notifications of new available courses please subscribe to our news letter</p>
+                <div class="col-xs-8 col-sm-12 col-xs-offset-2 vdm-footer-frm-wrapper">
+                    @using (Ajax.BeginForm("NewsLetter", "Account", null,
+                     new AjaxOptions()
+                     {
+                         HttpMethod = "post",
+                         InsertionMode = InsertionMode.Replace,
+                         UpdateTargetId = "subscribe-form"
+                     },
+                     new
+                     {
+                         @class = "form-inline",
+                         display = "inline"
+                     }))
+                    {
+                        <div class="form-group">
+                            @Html.TextBox("firstname", null,
+                             new
+                             {
+                                 @class = "form-control",
+                                 placeholder = "First Name",
+                                 data_val = "true",
+                                 data_val_FullName = "Your name is required",
+                                 data_val_required = "First Name is required"
+                             })
+                            <span class="text-danger field-validation-error"
+                                  data-valmsg-for="firstname"
+                                  data-valmsg-replace="true">
+                                <span for="firstname"></span>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            @Html.TextBox("email", null,
+                             new
+                             {
+                                 @class = "form-control",
+                                 placeholder = "Email",
+                                 data_val = "true",
+                                 data_val_required = "The email is required",
+                                 data_val_email = "Invalid email"
+                             })
+                            <span class="text-danger field-validation-error"
+                                  data-valmsg-for="email"
+                                  data-valmsg-replace="true">
+                                <span for="email"></span>
+                            </span>
+                        </div>
+                        <input type="submit" value="Subscribe" class="btn-primary" />
+                    }
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    @Scripts.Render("~/scripts/plugins")
+    @Scripts.Render("~/_scripts/customs")
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-135007118-1"></script>
+    <script data-ad-client="ca-pub-7905459063430097" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'UA-135007118-1');
+    </script>
+</body>
+</html>
+

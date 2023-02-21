@@ -1,0 +1,228 @@
+﻿@model IEnumerable<vidosa.Models.Video>
+@using vidosa.Models;
+@{
+    ViewBag.Title = string.Format("Videmy - {0}", "Learn the C# Programming from our beginners list of courses and upskill by buying to jump into the Advanced features of .NET using the C# language.");
+    var rows = Math.Floor((decimal)Model.Count() / 5) <= 5 ? 1 :
+        Math.Floor((decimal)Model.Count() / 5) + Model.Count() % 5;
+    Video[] sourceArray = Model.ToArray();
+    int currentIndex = 0;
+}
+<div class="jumbotron" style="background-color: rgba(0,0,0,0.9);background-image: url(/images/jumbobackground.jpg);height: 481px;">
+    <h1 style="font-size:30pt;color:white;margin-top:9%">Learn at your own pace</h1>
+    <p class="lead" style="font-size:15pt;color:white">Learn anywhere at any time</p>
+    <p style="width:30%;margin-left:35%;border-radius:unset">
+        @using (VidosaContext Context = new VidosaContext())
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                @Ajax.ActionLink("Signup", "CreateAccount", "Account",
+                  new
+                  {
+                      ispartial=true
+                  },
+                  new AjaxOptions()
+                  {
+                      HttpMethod = "GET",
+                      InsertionMode = InsertionMode.Replace,
+                      LoadingElementId = "async-page-loading-id",
+                      UpdateTargetId = "container"
+                  },
+                  new
+                  {
+                      @class= "btn btn-primary btn-lg btn-subscribe"
+                  })
+                @Ajax.ActionLink("Login", "Login", "Account",
+                new
+                {
+                    ispartial=true
+                },
+                new AjaxOptions()
+                {
+                    InsertionMode=InsertionMode.Replace,
+                    HttpMethod="GET",
+                    LoadingElementId="async-page-loading-id",
+                    UpdateTargetId="container"
+                },
+                new
+                {
+                    @class= "btn btn-primary btn-lg btn-subscribe"
+                })
+            }
+
+            if (User.Identity.IsAuthenticated && !Context.PremiumSubs.ToList().Exists(pu => pu.Username == User.Identity.Name))
+            {
+                @Ajax.ActionLink("Upgrade to Premium", "finance", "finance",
+                  new
+                  {
+                      ispartial=true
+                  },
+                  new AjaxOptions()
+                  {
+                      HttpMethod = "GET",
+                      InsertionMode = InsertionMode.Replace,
+                      LoadingElementId = "async-page-loading-id",
+                      UpdateTargetId = "container"
+                  },
+                  new
+                  {
+                      @class= "btn btn-primary btn-lg btn-subscribe"
+                  })
+                @Ajax.ActionLink("Logout", "Logout", "Account",
+                 new
+                 {
+                    ispartial=true
+                 },
+                 new AjaxOptions()
+                 {
+                    InsertionMode=InsertionMode.Replace,
+                    HttpMethod="GET",
+                    LoadingElementId="async-page-loading-id",
+                    UpdateTargetId="container"
+                 },
+                 new
+                 {
+                    @class= "btn btn-primary btn-lg btn-subscribe"
+                 })
+            }
+
+            if (User.Identity.IsAuthenticated && Context.PremiumSubs.ToList().Exists(pu => pu.Username == User.Identity.Name))
+            {
+                @Ajax.ActionLink("Logout", "Logout", "Account",
+                 new
+                 {
+                    ispartial=true
+                 },
+                 new AjaxOptions()
+                 {
+                    InsertionMode=InsertionMode.Replace,
+                    HttpMethod="GET",
+                    LoadingElementId="async-page-loading-id",
+                    UpdateTargetId="container"
+                 },
+                 new
+                 {
+                    @class= "btn btn-primary btn-lg btn-subscribe"
+                 })
+            }
+        }
+    </p>
+</div>
+<div class="row" style="width:100%">
+    <div class="col-lg-6" style="margin-bottom:2%;margin-left:2%;padding:0;border:0">
+        <iframe src="~/Video/VideoPlayer?v=llfC7nVfG2KXht9f9m98sU5Lt52xFb7wLbM00Pdf34&ispartial=TRUE"
+                style="width:100%" id="player-frame"></iframe>
+        <div class="vid-text"></div>
+    </div>
+    <div class="col-lg-4 form-container" id="createaccount">
+        <br />
+        <div class="subscribe-message">
+            <p>
+                For updates on the progress of this site please subscribe to our news letter.
+            </p>
+            <p>
+                We respect your privacy and understand how annoying mail spam can be,
+                therefore we will never share your email with anyone.
+            </p>
+        </div>
+        @using (Ajax.BeginForm("NewsLetter", "Account",
+                           new
+                           {
+
+                           },
+                           new AjaxOptions()
+                           {
+                               HttpMethod = "post",
+                               UpdateTargetId = "createaccount",
+                               InsertionMode = InsertionMode.Replace,
+                           },
+                           new
+                           {
+                               @class = "form-inline",
+                               display = "inline",
+                               style = "width:100%"
+                           }))
+        {
+            <div class="form-group" style="width:98%;">
+                @Html.TextBox("firstname", null,
+                  new
+                  {
+                      @class= "form-control",
+                      style = "margin-bottom:3%;width:98%",
+                      placeholder = "First Name"
+                  })
+            </div>
+            <br />
+            <div class="form-group" style="width:98%;">
+                @Html.TextBox("email", null,
+                  new
+                  {
+                      @class= "form-control",
+                      style = "margin-bottom:3%;width:98%;",
+                      placeholder = "Email"
+                  })
+            </div>
+            <input type="submit" value="Subscribe" class="btn-primary" style="padding:3%;width:97%;margin-bottom:3%;background-color: orange;border: none;" />
+        }
+    </div>
+    <div class="col-lg-1"></div>
+</div>
+<div class="about-developer">
+    <div class="row">
+        <div class="col-lg-1"></div>
+        <div class="col-lg-3 developer-img">
+            <img src="~/Images/monailakgotliso.jpg" />
+        </div>
+        <div class="col-lg-7 developer-info">
+            <p>
+                My name is Kgotliso Monaila an Information Technology graduate and a Microsoft Certfied Web Developer with a 4 years of experience.
+                I am fond to online education because of its easy access and cheaper in cost.
+            </p>
+            <p>
+                Now the Question is how do we get out of this problem? How can we leverage the skills of the few good teachers we have to always close the gap everytime it is required? How can we easily uplift the
+                we came back and still there was no maths teacher, we had to strike to put pressure on the school to pace up the process of moving a teacher from one school to the other.
+            </p>
+            <p>
+                Now the Question is how do we get out of this problem? How can we leverage the skills of the few good teachers we have to always close the gap everytime it is required? How can we easily uplift the
+                we came back and still there was no maths teacher, we had to strike to put pressure on the school to pace up the process of moving a teacher from one school to the other.
+            </p>
+        </div>
+        <div class="col-lg-1"></div>
+    </div>
+</div>
+<h2 style="font-size:15pt;color:gray;padding-left:10px">Available Courses</h2>
+@for (int row = 0; row <= rows; row++)
+{
+    List<Video> videos = new List<Video>();
+    if (sourceArray.Length - currentIndex <= 5)
+    {
+        videos = sourceArray.Skip(currentIndex).Take(sourceArray.Length - currentIndex).ToList();
+        currentIndex += sourceArray.Length - currentIndex;
+    }
+    else
+    {
+        videos = sourceArray.Skip(currentIndex).Take(5).ToList();
+        currentIndex += 5;
+    }
+    <div class="row" style="margin-left:0;width:100%">
+        @for (int col = 0; col < videos.Count; col++)
+        {
+            <div class="col-lg-2" style="padding:0;margin:1%">
+                <a href=@string.Format("https://{0}:{1}/Video/Player?v={2}&ispartial=TRUE",
+                   Request.Url.Host, Request.Url.Port, videos[col].VideoId)
+                   title="@videos[col].Title" style="text-decoration:none"
+                   data-ajax="true" data-ajax-loading="#async-page-loading-id"
+                   data-ajax-method="GET" data-ajax-update="#container"
+                   data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">
+                    <span class="duration">@videos[col].Duration</span>
+                    <div class="card">
+                        <img src="@videos[col].Thumb" class="card-img-top" title="@videos[col].Title" />
+                        <div class="card-body">
+                            <h5 class="card-title">@videos[col].Title</h5>
+                            <p class="card-text">@videos[col].Description</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,39 @@
+﻿@model IEnumerable<vidosa.Models.Video>
+@using vidosa.Models
+@{ 
+
+}
+
+<div id="accvideos" class="row ">
+    @foreach (Video video in Model)
+    {
+        <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12 hm-linked-div">
+            <a href=@string.Format("{0}", Utility.IsCrawlbot(Request) is true ? string.Format("https://{0}:{1}/Video/Player/v={2}",
+                   Request.Url.Host, Request.Url.Port, video.VideoId) : string.Format("https://{0}:{1}/Video/Player?v={2}",
+                   Request.Url.Host, Request.Url.Port, video.VideoId))
+               title="@video.Title" style="text-decoration:none"
+               data-ajax="true"
+               data-ajax-method="GET" data-ajax-update="#container"
+               data-ajax-mode="replace" data-ajax-begin="beforeasyncCall"
+               data-ajax-success="loadSuccess" data-ajax-failure="">
+                <div class="row hm-ava-course-row">
+                    <div class="col-lg-12 col-md-12 col-sm-5 col-xs-5 hm-thumb-con">
+                        @if (!Utility.IsCrawlbot(Request))
+                        {
+                            <span class="duration">@video.Duration</span>
+                        }
+                        <img src="@video.Thumb" class="thum-img" title="@video.Title" alt="@video.Title" />
+                    </div>
+                    <div class="col-lg-12 col-md-12 col-sm-7 col-xs-7 hm-ava-desc">
+                        <div class="card-body">
+                            <h5 class="card-title card-title-overflow">@video.Title</h5>
+                            <div class="module overflow">
+                                <p>@video.Description</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    }
+</div>

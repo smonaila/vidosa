@@ -1,0 +1,68 @@
+﻿@using vidosa.Models;
+@{
+
+}
+@using (VidosaContext vidosaContext = new VidosaContext())
+{
+    if (ViewBag.CurrentPage <= 1)
+    {
+        <div class="col-lg-12 col-md-12 col-sm-12" id="comments-wrapper" data-cmnts-key="@ViewBag.CommentKey" data-comnts-type="@ViewBag.CommentType">
+            <span class="comment-counter">@ViewBag.CommentCounter</span>
+            <div class="col-lg-12 col-xs-12 comment-form-wrapper">
+                <form action=@string.Format("/blog/setcomment") data-ajax="true" method="post" data-ajax-mode="replaceAfter" data-ajax-success="commentSuccess" id="main-comment-form">
+                    <input type="hidden" value="true" name="IsmainComment" />
+                    <input type="hidden" value="@ViewBag.CommentType" name="ct" />
+                    <input type="hidden" value="@ViewBag.CommentKey" name="key" />
+                    <input type="hidden" value="@ViewBag.CommentKey" name="parentId" />
+                    <div class="col-lg-10 col-xs-10 cmnt-input-wrapper">
+                        <textarea cols="5" rows="5" name="cmnt-message" placeholder="Comment"></textarea>
+                    </div>
+                    <div class="cmnt-tool-wrapper col-lg-2 col-xs-2">
+                        <span class="btn-submit">
+                            <input type="submit" value="Send" class="btn btn-primary" />
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-12 col-xs-12 cmnts-wrapper">
+                @Html.Action("PrintComments", "blog",
+                         new
+                         {
+                             ct= ViewBag.CommentType,
+                             key=ViewBag.CommentKey,
+                             page=1
+                         })
+            </div>
+        </div>
+    }
+    else
+    {
+        @Html.Action("PrintComments", "blog",
+                     new
+                     {
+                         ct= ViewBag.CommentType,
+                         key=ViewBag.CommentKey,
+                         page=ViewBag.NextMainComment
+                     })
+    }
+}
+
+@*<script src="~/Scripts/customs/customs.js"></script>*@
+<script>
+    (function () {
+        var spanReactions = document.getElementsByClassName("reaction");
+        var click_span = document.getElementsByClassName("cmnt-reply");
+        var anchorLoadComm = document.getElementsByClassName("anc-load-comments-reply");        
+
+        for (var i = 0; i < click_span.length; i++) {
+            click_span[i].addEventListener("click", function (event) {
+                window.onreply(event);
+            });
+        }
+
+        window.addEventListener("load", function (e) {
+            window.getReactions(spanReactions);
+            window.addClicksLoadComm(anchorLoadComm);
+        });
+    })();
+</script>

@@ -1,0 +1,19 @@
+﻿@model IEnumerable<vidosa.Models.Post>
+@using vidosa.Models;
+
+@{
+    List<Chapter> chapters = (List<Chapter>)ViewBag.Chapters;
+    List<Subject> subjects = (List<Subject>)ViewBag.Subjects;
+}
+
+<form method="post" id="save-chapters-form">
+    <div class="post-list">
+        @foreach (Post post in Model)
+        {
+            <div class="chapter-options form-group">
+                <input type="checkbox" class="checkbox-inline" data-postKey="@post.PostKey" /> <span>@post.Title</span>
+            </div>
+        }
+    </div>
+</form>
+<input type="hidden" id="cqs" value=@string.Format("subjectId={0}&chapters={1}", ViewBag.SubjectId, ViewBag.chapterQS) />

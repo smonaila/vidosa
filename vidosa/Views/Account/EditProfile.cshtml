@@ -1,0 +1,245 @@
+﻿@model vidosa.Models.EditProfileView
+@using vidosa.Models
+@using vidosa.Areas.admin.Models
+@{
+    ApplicationUser applicationUser = null;
+    using (VidosaContext vidosaContext = new VidosaContext())
+    {
+        applicationUser = (from u in vidosaContext.Users
+                           where u.Email == User.Identity.Name
+                           select u).FirstOrDefault();
+    }
+}
+<link href="~/Content/jquery-ui.css" rel="stylesheet" />
+<div id="profiletabs">
+    <ul>
+        <li><a href="#profiledet">Basic Info</a></li>
+        <li><a href="/account/uservideos">Videos</a></li>
+        <li><a href="/account/channel">Channel</a></li>
+    </ul>
+    <div id="profiledet">
+        @using (Ajax.BeginForm("SaveProfile", "Account", new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            OnSuccess = "before",
+            InsertionMode = InsertionMode.Replace,
+            LoadingElementId = "loading-login-img",
+            UpdateTargetId = "container",
+        },
+        new
+        {
+
+        }))
+        {
+            @*@Html.AntiForgeryToken()*@
+            <div class="row">
+                <div class="col-lg-8 bsc-prfl-info-wrapper">
+                    <div class="col-lg-12">
+                        <h4>Personal Information</h4>
+                        <hr />
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="form-group">
+                            <div class="col-md-5">
+                                @Html.EditorFor(model => model.Username, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-5">
+                                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <h4>Account Information</h4>
+                        <hr />
+                        <div class="form-group">
+                            <div class="col-lg-10">
+                                @Html.Label("Account Type: ")
+                                @Html.Display(string.Format("{0}", AccountType.Free.ToString()))
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-10">
+                                @Html.LabelFor(model => model.AccCrtDate, "Account Created: ")
+                                @Html.DisplayFor(model => model.AccCrtDate, new { type = "datetime" })
+                                @Html.ValidationMessageFor(model => model.AccCrtDate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-10">
+                                @Html.LabelFor(model => model.AccessFailedCount, "AccessFailedCounts: ")
+                                @Html.DisplayFor(model => model.AccessFailedCount, new { type = "text" })
+                                @Html.ValidationMessageFor(model => model.AccessFailedCount, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-10">
+                                @Html.LabelFor(model => model.TwoFactorEnabled, "Enable TwoFactor Authentication: ")
+                                @Html.RadioButtonFor(model => model.TwoFactorEnabled, "checked")
+                                @Html.DisplayName("Yes")
+                                @Html.RadioButtonFor(model => model.TwoFactorEnabled, "unchecked")
+                                @Html.DisplayName("No")
+                                @Html.ValidationMessageFor(model => model.AccessFailedCount, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <h4>Contact Information</h4>
+                        <div class="form-group">
+                            <div class="col-lg-10">
+                                @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control", placeholder = "Phone Number" } })
+                                @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-10">
+                                @*@HtmlTextAreaFor(Model => )*@
+                                @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-10">
+                                @*@HtmlTextAreaFor(Model => )*@
+                                @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-offset-2 col-md-10">
+                            <span id="loading-login-img" class="">
+                                <img src="~/Images/loading.gif"
+                                     width="20"
+                                     style="position:relative;" />
+                            </span>
+                            <input type="submit" value="Save Changes" class="btn btn-default" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="col-lg-12 prfl-pic-wrap">
+                        <img src="/Images/@applicationUser.ProfilePic" id="prflepic" />
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <label title="Profile Picture">Profile Picture: </label> <button type="button" id="select-profile-pic" value="Profile Picture" class="btn btn-primary">Select Picture</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/Scripts/jquery-ui.js"></script>
+<script>
+    (function () {
+        var clickElem = function (elem) {
+            var eventMouse = document.createEvent("MouseEvents");
+            eventMouse.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            elem.dispatchEvent(eventMouse);
+        }
+
+        $("#profiletabs").tabs({
+            beforeLoad: function (event, ui) {
+                ui.jqXHR.fail(function () {
+                    ui.panel.html("Could not load data");
+                });
+            }
+        });
+
+        uploadProfileFile = function (_file) {
+            let file = _file;
+            let allowed_mime_types = ["image/jpeg", "image/png"];
+            let allowed_size_mb = 50000;
+
+            if (allowed_mime_types.indexOf(file.type) == -1) {
+                alert("Error: Incorrect file type " + file.type);
+                return;
+            }
+
+            if (file.size > allowed_size_mb * 1024 * 1024) {
+                alert("Error: Exceeded size");
+                return;
+            }
+
+            let data = new FormData();
+            data.append("file", _file);
+            // alert("Event SourceId = " + sourceId)
+            let request = new XMLHttpRequest();
+            request.open("POST", "/account/uploadprofilepic");
+            request.upload.addEventListener("progress", function (e) {
+                let percent_complete = Math.floor((e.loaded / e.total) * 100);
+                // percentage of upload completed
+                console.log("Uploading " + percent_complete + "%");
+                // progress_bar = document.getElementsByClassName("progress-bar");
+                // $(progress_bar).width(percent_complete + "%");
+                // percentage Value
+                // document.getElementsByClassName("percent-value")[0].innerHTML = Math.floor(percent_complete) + "%";
+            });
+            request.responseType = request.responseText;
+            request.addEventListener("load", function (e) {
+                // HTTP status message
+                if (this.status == 200) {
+                    var img = document.getElementById("prflepic");
+                    var response = JSON.parse(request.responseText);
+                    img.src = response.Url;
+
+                    // alert("Profile Picture Uploaded Successfully!");
+                }
+            });
+            request.addEventListener("error", function (e) {
+                alert("Error!");
+            });
+            request.send(data);
+        }
+
+        openProfileFile = function (func, cev) {
+            // alert("Open File!");
+            // var sourceId = cev.target.getAttribute("id");
+            readFile = function (e) {
+                if (cev === "select-file") {
+                    document.getElementsByClassName("upload-icons-con").item(0).style.display = "none";
+                    document.getElementsByClassName("progress-bar-con").item(0).style.display = "inline-block";
+                }
+                var file = e.target.files[0];
+                if (!file) {
+                    return;
+                }
+                fileInput.uploadProfileFile(file);
+                document.body.removeChild(fileInput);
+            }
+            fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.style.display = "none";
+            fileInput.onchange = readFile;
+            fileInput.uploadProfileFile = func;
+            document.body.appendChild(fileInput);
+            clickElem(fileInput);
+        }
+
+
+
+        document.getElementById("select-profile-pic").addEventListener("click", function (e) {
+            openProfileFile(uploadProfileFile, e);
+        });
+    })()
+</script>
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>

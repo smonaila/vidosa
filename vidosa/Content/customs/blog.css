@@ -1,0 +1,146 @@
+﻿.blog-banner a img{
+	width: 100%;
+}
+.html-string{
+	color: green;
+}
+.vdm-post-wrap {
+	background-color: white;
+	padding: 5px;
+	margin-bottom: 10px;
+	border-radius: 5px;
+}
+.chapter-list-wrapper {
+	padding: 0;
+	background-color: lightgrey;
+}
+.chapter-list-wrapper ul li{
+	list-style: none;
+}
+	.chapter-list-wrapper ul li a {
+		color: black;
+	}
+	.chapter-list-wrapper ul {
+		padding: 0 0 0 5px;
+	}
+	.active-post{
+		background-color: blue;
+	}
+	.post-title {
+		padding: 0;
+		margin: 0 0 15px 0;
+		font-size: 20pt;
+	}
+.media-body .title a {
+	color: black;
+}
+.blog-post-body, .vdm-post-content .blog-post-header {
+	margin-top: 1%;
+	background-color: white;
+	padding: 5px 5px 5px 10px;
+}
+.pst-main-cmnt-wrapper{
+	margin-top: 1%;
+}
+.pst-cmnt-wrapper {
+	padding: 0;
+}
+.code-output span {
+	background-color: lightgray;
+	padding-left: 10px;
+	font-size: 11pt;
+	display: block;
+}
+.blog-post img {
+	width: 100%;
+}
+article.blog-post {
+	padding: 0;
+	margin-bottom: 12px;
+}
+.vdm-post-content{
+	padding:0;
+}
+.intro {
+	margin-top: 1%;
+}
+.meta span {
+	color: gray;
+}
+.media-con img {
+	width: 100%;
+}
+.post-list-con {
+	margin-bottom: 2%;
+}
+.vdm-post-thumb {
+	padding: 0;
+}
+.vdm-ui-accordion-wrapper{
+	padding:0;
+	margin:0;
+}
+div#createaccount {
+	margin: 0 0 12px 0;
+}
+.vdm-pager-wraper {
+	margin-bottom: 10px;
+}
+
+.pager-previous {
+	text-align: start;
+}
+
+/* Extra small devices (phones, 500 and down) */
+@media only screen and (max-width: 500px) {
+	div#createaccount {
+		padding-left: 8px;
+	}
+}
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (min-width: 500px) {
+
+}
+
+/* Small Screens (max-width: 600px) */
+@media only screen and (max-width: 600px) {
+
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+
+}
+
+/* Small devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+
+}
+
+@media only screen and (max-width: 768px) {
+	
+}
+
+@media only screen and (max-width: 992px) {
+	.pager-next {
+		text-align: end;
+	}
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+	.vdm-news-letter-wrapper, vdm-ui-accordion-wrapper {
+		padding: 0;
+	}
+	#news-letter-wrapper {
+		padding: 0 0 0 5px;
+	}
+}
+
+
+@media only screen and (min-width: 1200px) {
+	code pre, pre samp{
+		min-height: 300px;
+	}
+}

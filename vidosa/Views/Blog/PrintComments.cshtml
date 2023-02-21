@@ -1,0 +1,125 @@
+﻿@model IEnumerable<vidosa.Models.Comment>
+@using vidosa.Models
+@{
+    List<Reactions> CommentsReactions = (List<Reactions>)(ViewBag.CommentReactions);
+    List<Comment> AllComments = (List<Comment>)(ViewBag.AllComments);
+    int SkipCounter = (int)(ViewBag.SkipCounter);
+    int MainCommentsCounter = (int)(ViewBag.MainCommentsCounter);
+}
+
+@using (VidosaContext vidosaContext = new VidosaContext())
+{
+    foreach (Comment comment in Model)
+    {
+        if (!comment.IsReply)
+        {
+            ApplicationUser applicationUser = vidosaContext.Users.ToList().Find(u => u.Id == comment.UserId);
+            <div class="cmedia col-lg-12 col-xs-12" id="@comment.CommentId">
+                <div class="col-lg-12 col-xs-12 musercomment">
+                    <div class="cmedia-left col-lg-1 col-xs-1">
+                        <img src="~/Images/@applicationUser.ProfilePic" class="media-object" style="width:30px;border-radius:15px" />
+                    </div>
+                    <div class="cmedia-body col-lg-11 col-xs-11">
+                        <h4 class="media-heading col-xs-12"><a href=@string.Format("~/account/user?uid={0}", applicationUser.Id)> @string.Format("{0} {1}", applicationUser.LastName, applicationUser.FirstName)</a></h4>
+                        <div class="cmnt-content-wrapper col-xs-12 col-lg-12">
+                            @HttpUtility.HtmlDecode(comment.Content)
+                        </div>
+                        <div class="cmnt-reaction-wrapper col-xs-12 col-lg-12">
+                            <span class="cmnt-reply" data-reply-to="@comment.CommentId">Reply</span>
+                            <span class="cmnt-like"><span class="glyphicon glyphicon-hand-up reaction" data-contentId="@comment.CommentId" data-contentType="1" data-reactionType="1"></span> <span class="like-counter">@string.Format("{0}", CommentsReactions.Where(cr => cr.ContentId == comment.CommentId && cr.Reaction == ReactionType.Like).Count() > 1 ? string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == comment.CommentId && cr.Reaction == ReactionType.Like).Count(), "Likes") : string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == comment.CommentId && cr.Reaction == ReactionType.Like).Count(), "Like"))</span> </span>
+                            <span class="cmnt-unlike">
+                                <span class="glyphicon glyphicon-hand-down reaction" data-contentId="@comment.CommentId" data-contentType="1" data-reactionType="2"></span>
+                                <span class="unlike-counter">
+                                    @string.Format("{0}", CommentsReactions.Where(cr => cr.ContentId == comment.CommentId && cr.Reaction == ReactionType.Unlike).Count() > 1 ? string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == comment.CommentId && cr.Reaction == ReactionType.Unlike).Count(), "Unlikes") : string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == comment.CommentId && cr.Reaction == ReactionType.Unlike).Count(), "Unlike"))
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                @{
+                    List<CommentReply> commentReplies = vidosaContext.CommentReplies.Where(cr => cr.ParentId == comment.CommentId).OrderBy(cr => cr.CommentDate).Take(3).ToList();
+                    List<CommentReply> totalReplies = vidosaContext.CommentReplies.Where(cr => cr.ParentId == comment.CommentId).ToList();
+                }
+                @if (commentReplies.Count > 0)
+                {
+
+                    for (int i = 0; i < commentReplies.Count; i++)
+                    {
+                        Comment User = AllComments.Find(c => c.CommentId == commentReplies[i].CommentId);
+                        string commentId = commentReplies[i].CommentId;
+                        List<CommentReply> replies = vidosaContext.CommentReplies.Where(cr => cr.ParentId == commentId).ToList();
+
+                        ApplicationUser commentUser = vidosaContext.Users.ToList().Where(u => u.Id == User.UserId).FirstOrDefault();
+                        <div class="cmedia col-lg-12 col-xs-12" id="@commentReplies[i].CommentId">
+                            <div class="col-lg-12 col-xs-12 ucomment">
+                                <div class="cmedia-left col-lg-12 col-xs-12">
+                                    <div class="cmedia-object col-lg-1 col-xs-1">
+                                        <img src="~/Images/@commentUser.ProfilePic" title="" style="width:30px;border-radius:15px" />
+                                    </div>
+                                    <div class="cmedia-body col-lg-10 col-xs-11">
+                                        <h4 class="media-heading col-xs-12"><a href=@string.Format("~/account/user?uid={0}", commentUser.Id)> @string.Format("{0} {1}", commentUser.LastName, commentUser.FirstName)</a></h4>
+                                        <div class="cmnt-content-wrapper col-xs-12">
+                                            @{
+                                                Comment com = vidosaContext.Comments.ToList().Find(c => c.CommentId == commentReplies[i].CommentId);
+                                            }
+                                            @HttpUtility.HtmlDecode(com.Content)
+                                        </div>
+                                        <div class="cmnt-reaction-wrapper col-lg-12 col-xs-12">
+                                            <span class="cmnt-reply" data-reply-to="@com.CommentId">Reply</span>
+                                            <span class="cmnt-like"><span class="glyphicon glyphicon-hand-up reaction" data-contentId="@com.CommentId" data-contentType="1" data-reactionType="1"></span> <span class="like-counter">@string.Format("{0}", CommentsReactions.Where(cr => cr.ContentId == com.CommentId && cr.Reaction == ReactionType.Like).Count() > 1 ? string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == com.CommentId && cr.Reaction == ReactionType.Like).Count(), "Likes") : string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == com.CommentId && cr.Reaction == ReactionType.Like).Count(), "Like"))</span> </span>
+                                            <span class="cmnt-unlike">
+                                                <span class="glyphicon glyphicon-hand-down reaction" data-contentId="@com.CommentId" data-contentType="1" data-reactionType="2"></span>
+                                                <span class="unlike-counter">
+                                                    @string.Format("{0}", CommentsReactions.Where(cr => cr.ContentId == com.CommentId && cr.Reaction == ReactionType.Unlike).Count() > 1 ? string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == com.CommentId && cr.Reaction == ReactionType.Unlike).Count(), "Unlikes") : string.Format("{0} {1}", CommentsReactions.Where(cr => cr.ContentId == com.CommentId && cr.Reaction == ReactionType.Unlike).Count(), "Unlike"))
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (replies.Count > 0)
+                            {
+                                var replyCounter = replies.Count;
+                                if (replyCounter > 0)
+                                {
+                                    <a href="/blog/getreplies?@string.Format("commentId={0}&page={1}", replies[replies.Count - 1].ParentId, ViewBag.ReplyPage)"
+                                       data-ajax="true" data-ajax-mode="replaceAfter" data-ajax-success="loadCommentReplies"
+                                       data-ajax-update="@replies[replies.Count - 1]">
+                                        @string.Format("{0}", replies.Count > 1 ? string.Format("{0} Replies", replies.Count) : string.Format("{0} Reply", replies.Count))
+                                    </a>
+                                }
+                            }
+                        </div>
+                    }
+
+                }
+                @if ((totalReplies.Count - commentReplies.Count) > 0)
+                {
+                    var replyCounter = totalReplies.Count - commentReplies.Where(cr => cr.ParentId == comment.CommentId).Count();
+                    if (replyCounter > 0)
+                    {
+                        <a href="/blog/getreplies?@string.Format("commentId={0}&page={1}", commentReplies[commentReplies.Count - 1].ParentId, ViewBag.ReplyPage)"
+                           data-ajax="true" data-ajax-mode="replaceAfter" data-ajax-success="loadCommentReplies"
+                           data-ajax-update="@commentReplies[commentReplies.Count - 1]">
+                            @string.Format("{0}", replyCounter > 1 ? string.Format("{0} Replies", replyCounter) : string.Format("{0} Reply", replyCounter))
+                        </a>
+                    }
+                }
+            </div>
+        }
+    }
+    if ((ViewBag.MainCommentsCounter > 0))
+    {
+            <a href="/blog/getcomments?@string.Format("ct={0}&key={1}&page={2}", ViewBag.CommentType, ViewBag.CommentKey,  ViewBag.ReplyPage)"
+               data-ajax="true" data-ajax-mode="replaceAfter" data-ajax-success="getComment"
+               data-ajax-update="comments-wrapper" class="anc-load-comments-reply">
+                @string.Format("{0}", MainCommentsCounter > 1 ? string.Format("{0} Replies", MainCommentsCounter) : string.Format("{0} Reply", MainCommentsCounter))
+            </a>
+    }
+}
+
+<script>
+    (function () {
+        
+    })()
+</script>

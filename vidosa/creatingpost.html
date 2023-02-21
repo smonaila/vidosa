@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+
+     <!--<p>
+                A variable is a place holder for a value. A named memory slot with type to store data. Variables have two main important properties a name and the type of data stored into this named memory slot.
+            </p>
+
+            <p>If you declare a variable named number1 of type int, this means that you can only store integer numbers into that variable. There are basically two different types of variable, value type variables and reference type variable. These two types of variables can categorised into simpler types. The details of variable types is beyond the scope of this article to keep it simple we not going to delve into details of variable type but rather what is the variable question?</p>
+            <p>DECLARING a variable.</p>
+            <p>
+                Declaring a variable means instructing a compiler to allocate a certain amount of memory where you are going to store a certain type of data. Different languages use different syntax to declare a variable.
+                The following are Examples of how to declare a variable in C#.
+            </p>
+
+            <figure>
+            <figcaption id="example1-caption">
+
+            </figcaption>
+            <pre  aria-labelledby="example1-caption" aria-describedby="example1-description">
+            <code>
+                <b>static void</b> LocalVarDeclarations()
+                {
+                    int number;
+                    string name;
+                    double pi;
+                    DateTime dob;
+                }
+            </code>
+            </pre>
+            </figure> 
+            <p>
+                In the above examples int, string, double, DateTime are the types of variables number, name, pi, dob respectively. number, name, pi and dob are variable names. Variables should be unique within the scope of your code where they are declared.
+            </p>
+            <p>It is an error to try to use a variable that has not been initialized. therefor it is advisable to initialize a variable when it is declared.</p>
+
+            <figure>
+            <figcaption id="example1-caption">
+
+            </figcaption>
+            <pre  aria-labelledby="example1-caption" aria-describedby="example1-description">
+            <code>
+                <b>static void</b> LocalVarDeclarations()
+                {
+                    // The following variables are declared and initialized.
+                    int number = 10;
+                    string name = "Kgotliso";
+
+                    // The following variables are not initialized.
+                    double pi;
+                    DateTime dob;
+
+                    // It is OK to use number and name because they have bee initialized.
+                    int sum = number + 10; 
+                    Console.WriteLine("Your Name is {0}", name);
+
+                    // It is a compiler error to use pi and dob because they have not been initialized.
+                    Console.WriteLine("D.O.B: {0}", dob);
+
+                    // Error pi has not been initialized
+                    double circumferance = 2 * pi<sup>2</sup>;
+                }
+            </code>
+            </pre>
+            </figure> 
+
+            <h2>Newing the Simple Types</h2>
+            <p>
+            It is important to note that it is also possible to use the new keyword (an operator used to allocate memory) when creating variables of type the Intrinsic data type (simple data types).
+            </p>
+            <figure>
+            <figcaption id="example1-caption">
+
+            </figcaption>
+            <pre  aria-labelledby="example1-caption" aria-describedby="example1-description">
+            <code>
+                <b>static void</b> LocalVarDeclarations()
+                {
+                    // The following variables are declared and initialized.
+                    int number = new int(); // initial value 0;
+                    string name = new string(); // initial value null;
+                    double pi = new double(); // initial value 0;
+                    DateTime dob = new DateTime(); // initial value 1/1/0001 12:00:00 AM
+                }
+            </code>
+            </pre>
+            </figure>
+            <p>When you use the new operator to create the variables the compiler use the type default value to assign the initial value to your variable. Different types have different default values. For example the default value for variables of type int is 0, null for all object references including strings, a single empty character for char varibles and false for bool variable.</p>-->
+
+
+
+
+
+
+    <div>
+        <p>The main reason of writing software application is to process data. The data may come from various sources such as Database Management System e.g SQL Server, local XML document, a text file, or a web service call. These data sources incorporate different types data points such as numbers which can be sub categorised into double floating point numbers, single floating point number, decimal, integers, short integers and long integer numbers e.t.c.</p>
+        <p>
+            In order to process these data points there need to be a way to present them in memory. The CTS (Common Type Specification) describes a list of types that can be used to present different types of data points in memory.
+        </p>
+        <p>CTS are one of the three components of .NET Framework. It details the numerous types supported by the CLR (Common Language Runtime).  The following table list some but not all types provided by the .NET Framework.</p>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>C# Shorthand</th>
+                        <th>System Type</th>
+                        <th>Range</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr>
+                <td>bool</td>
+                <td>System.Boolean</td>
+                <td>true or false</td>
+                </tr>
+
+                <tr>
+                <td>sbyte</td>
+                <td>System.SByte</td>
+                <td>-128 to 128</td>
+                </tr>
+
+                <tr>
+                <td>byte</td>
+                <td>System.Byte</td>
+                <td>0 to 255</td>
+                </tr>
+
+                <tr>
+                <td>short</td>
+                <td>System.Int16</td>
+                <td> -2<sup>15</sup> to 2<sup>15</sup> - 1</td>
+                </tr>
+
+                <tr>
+                <td>ushort</td>
+                <td>System.UInt16</td>
+                <td>0 to 2<sup>16</sup></td>
+                </tr>
+
+                <tr>
+                <td>int</td>
+                <td>System.Int32</td>
+                <td>-2<sup>31</sup> to 2<sup>31</sup> - 1</td>
+                </tr>
+
+                <tr>
+                <td>uint</td>
+                <td>System.UInt32</td>
+                <td>0 to 2<sup>32</sup></td>
+                </tr>
+
+                <tr>
+                <td>long</td>
+                <td>System.Int64</td>
+                <td>-2<sup>63</sup> to 2<sup>63</sup> - 1</td>
+                </tr>
+
+                <tr>
+                <td>ulong</td>
+                <td>System.UInt64</td>
+                <td>0 to 2<sup>64</sup></td>
+                </tr>
+
+                <tr>
+                <td>char</td>
+                <td>System.Char</td>
+                <td>U+0000 to U+ffff</td>
+                </tr>
+
+                <tr>
+                <td>float</td>
+                <td>System.Single</td>
+                <td>-3.4 x 10<sup>38</sup> to +3.4 x 10<sup>38</sup></td>
+                </tr>
+
+                <tr>
+                <td>double</td>
+                <td>System.Double</td>
+                <td>&#177;5.0 x 10<sup>-324</sup> to &#177;1.7 x 10<sup>308</sup></td>
+                </tr>
+
+                <tr>
+                <td>decimal</td>
+                <td>System.Decimal</td>
+                <td>(-7.9 x 10<sup>28</sup> to +7.9 x 10<sup>26</sup>) / 10<sup>0 to 28</sup></td>
+                </tr>
+
+                <tr>
+                <td>string</td>
+                <td>System.String</td>
+                <td>Limited by system memory</td>
+                </tr>
+
+                <tr>
+                <td>object</td>
+                <td>System.Object</td>
+                <td>Can store any data type in an object variable</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p>
+            Each .NET aware programming language may provide its own unique keyword that can be used as the shorthand notation for each of the above types. For example C# provide the bool keyword to resolve to the System.Boolean type, int as the shorthand notation for the System.Int32 type e.t.c. the bellow table provides more shorthand keyword for each and every type in .NET.
+        </p>
+    </div>
+</body>
+</html>

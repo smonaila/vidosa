@@ -1,0 +1,34 @@
+﻿@model vidosa.Models.Video
+@using vidosa.Models
+@{
+    ViewBag.Title = Model.Title;
+    ApplicationUser applicationUser = null;
+    Sales sales = null;
+    List<Comment> comments = (List<Comment>)ViewBag.Comments;
+}
+
+<ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#rltd-vid">Related Video</a></li>
+    <li><a data-toggle="tab" href="#comments">Comments</a></li>
+</ul>
+<div class="tab-content col-lg-12 col-lg-offset-1 col-sm-12 col-xs-12 related-videos-con">
+    <div id="rltd-vid" class="tab-pane fade in active">
+        @Html.Action("GetRelated", "Video",
+            new
+            {
+                matching=Model.Description,
+                current_vid_id=Model.VideoId,
+                page="1",
+                isvidended=false
+            })
+    </div>
+    <div id="comments" class="tab-pane fade" data-comnts-type="1" data-cmnts-key="@Model.VideoId">
+        @Html.Action("getcomments", "blog",
+        new
+        {
+            ct=CommentType.Video,
+            key=Model.VideoId,
+            page=1
+        })
+    </div>
+</div>

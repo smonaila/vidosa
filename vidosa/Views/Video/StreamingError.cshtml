@@ -1,0 +1,12 @@
+﻿@model vidosa.Models.StreamingException
+@{ 
+
+}
+<h2>Error: </h2>
+<div class="col-lg-12 col-md-12 col-sm-12">
+    <div>@Model.GetBaseException()</div>
+    <p>Playing videoId: @Model.VideoId @DateTime.Now</p>
+    <a href="~/Video/VideoPlayer?v=@Model.VideoId&ispartial=TRUE">Retry</a>
+</div>
+
+

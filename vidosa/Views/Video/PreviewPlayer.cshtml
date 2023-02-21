@@ -1,0 +1,8 @@
+﻿@model vidosa.Models.Video
+
+@{ 
+    
+}
+
+<iframe src="~/Video/VideoPlayer?v=@Model.VideoId&ispartial=true"
+        style="width:100%" id="player-frame" data-iframeId="@Guid.NewGuid().ToString().Replace("-", "")"></iframe>

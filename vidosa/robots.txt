@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /Home/Contact
+Disallow: /Home/About
+Disallow: /Account*
+Disallow: /finance*
+Disallow: /blog/getnextpage*
+Sitemap: https://vidosa.co.za/sitemap.xml

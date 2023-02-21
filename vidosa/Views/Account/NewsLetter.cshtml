@@ -1,0 +1,51 @@
+﻿@model vidosa.Models.NewsLetterView
+
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 subscribe-form-wrap hm-sub-con" id="createaccount">
+    <div class="col-lg-12 col-sm-12 col-md-12 vdm-hm-sub-msg-wrapper">
+        @if (ViewData.ModelState.IsValid)
+        {
+            <p>
+                We respect your privacy and understand how annoying mail spam can be,
+                therefore we will never share your email with anyone.
+            </p>
+        }
+        else
+        {
+            @Html.ValidationSummary(false, "", new { htmlAttributes = new { @class = "text-danger" } })
+        }
+    </div>
+    <div class="col-lg-12 col-sm-12 col-md-12 col-xs-12 vdm-hm-sub-msg-wrapper">
+        <div class="col-lg-12 col-sm-12 col-md-12 col-xs-12 vdm-hm-subscrp-frm-wrapper">
+            @using (Ajax.BeginForm("NewsLetter", "Account",
+                   new
+                   {
+
+                   },
+                   new AjaxOptions()
+                   {
+                       HttpMethod="post",
+                       UpdateTargetId="news-letter-wrapper",
+                       InsertionMode=InsertionMode.Replace                       
+                   },
+                   new
+                   {
+                       @class = "form-inline",
+                       display = "inline",
+                       style = ""
+                   }))
+            {
+                <div class="form-group" style="">
+                    @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control", placeholder = "First Name" } })
+                    @Html.ValidationMessageFor(model => model.FirstName, "", new { htmlAttributes = new { @class = "text-danger" } })
+                </div>
+                <div class="form-group">
+                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", placeholder = "Email" } })
+                    @Html.ValidationMessageFor(model => model.Email, "", new { htmlAttributes = new { @class = "text-danger" } })
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Subscribe" class="btn-primary" style="">
+                </div>
+            }
+        </div>
+    </div>
+</div>

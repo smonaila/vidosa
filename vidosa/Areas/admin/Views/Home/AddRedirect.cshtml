@@ -1,0 +1,96 @@
+﻿@model IEnumerable<vidosa.Models.Redirect>
+@using vidosa.Models
+
+@{
+    
+}
+
+@using (Ajax.BeginForm("SaveRedirect", new
+            {
+                ispartial = true
+            }, new AjaxOptions()
+            {
+                HttpMethod = "post",
+                UpdateTargetId = "redirects-list",
+                InsertionMode = InsertionMode.Replace
+            },
+            new
+            {
+                id = "addredirect-form"
+            })) 
+{
+    <div class="form-horizontal">
+        <h4>Redirect</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.TextBox("oldUrl", null, new { @class = "form-control", placeholder = "Old Url" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.TextBox("newUrl", null, new { @class = "form-control", placeholder = "New Url" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.Label("Post", new { @for = "ispost" })
+                @Html.RadioButton("ispost", new { @checked = true, title = "Post"})
+                @Html.Label("Video", new { @for = "isvideo" })
+                @Html.RadioButton("isvideo", new { @checked = false, title = "Video"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Add" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+}
+
+    <table class="table">
+        <tr>
+            <th>UrlId</th>
+            <th>OldUrl</th>
+            <th>NewUrl</th>
+            <th></th>
+        </tr>
+        <tbody id="redirects-list">
+            @foreach (Redirect redirect in Model)
+            {
+                <tr>
+                    <td>@redirect.Id</td>
+                    <td>@redirect.UrlIdFrom</td>
+                    <td>@redirect.UrlIdTo</td>
+                    <td>
+                        <a href=@string.Format("/admin/home/getpost?purl={0}", redirect.Id) data-ajax="true" data-ajax-success="loadSuccess"
+                           data-ajax-method="get" data-ajax-mode="replace"
+                           data-ajax-update="#container" data-ajax-begin="beforeasyncCall">Edit</a> |
+                        <a href="@string.Format("/blog/deleteRedirect?purl={0}", redirect.Id)" data-ajax="true" data-ajax-begin="beforeasyncCall"
+                           data-ajax-method="get" data-ajax-mode="replace" data-ajax-success="loadSuccess" data-ajax-update="#container" target="_blank">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" style="text-align:center">
+                    @for (int i = 1; i <= ViewBag.totalNumberOfPages; i++)
+                    {
+                        <a href=@string.Format("/admin/home/getnextpage?page={0}", i) title=@string.Format("Page {0}", i) class="pager"
+                           data-ajax="true" data-ajax-begin="beforeasyncCall"
+                           data-ajax-method="get" data-ajax-mode="replace"
+                           data-ajax-success="loadSuccess" data-ajax-update="#table-content-body">
+                            @string.Format("{0}", i)
+                        </a>
+                    }
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>

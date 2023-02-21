@@ -1,0 +1,105 @@
+﻿@model IEnumerable<vidosa.Models.Video>
+@using vidosa.Models;
+
+<div class="vid-ended-related col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <div id="video-ended-related" class="carousel">
+        <!-- The slide show -->
+        <div class="carousel-inner vid-ended-carousel col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            @using (VidosaContext vidosaContext = new VidosaContext())
+            {
+                List<Video> source_videos = Model.ToList();
+
+                var rows = Math.Floor((decimal)source_videos.Count() / 2) <= 2 ? 1 :
+                Math.Floor((decimal)source_videos.Count() / 2) + source_videos.Count() % 2;
+                Video[] sourceArray = source_videos.ToArray();
+
+                var carousel_counter = Math.Floor((decimal)source_videos.Count() / 6) <= 6 ? 1 :
+                Math.Floor((decimal)source_videos.Count() / 6);
+
+                if ((source_videos.Count() % 6) < 6 && (source_videos.Count() % 6) > 0)
+                {
+                    carousel_counter += 1;
+                }
+
+                int currentIndex = 0;
+
+                for (int carousel_index = 0; carousel_index < carousel_counter; carousel_index++)
+                {
+                    string active_class = carousel_index == 0 ? "active" : "";
+                    <div class="item @active_class col-xs-12 item-main-wrapper">
+                        @for (int row = 0; row < 2; row++)
+                        {
+                            List<Video> videos = new List<Video>();
+                            if (sourceArray.Length - currentIndex <= 2)
+                            {
+                                videos = sourceArray.Skip(currentIndex).Take(sourceArray.Length - currentIndex).ToList();
+                                currentIndex += sourceArray.Length - currentIndex;
+                            }
+                            else
+                            {
+                                videos = sourceArray.Skip(currentIndex).Take(3).ToList();
+                                currentIndex += 3;
+                            }
+                            <div class="col-xs-12 item-wrapper">
+                                @for (int col = 0; col < videos.Count; col++)
+                                {
+                                    <a class="col-lg-1 col-md-4 col-sm-4 col-xs-12 rltd-vid-anchor" data-href=@string.Format("https://{0}:{1}/Video/Player?v={2}&ispartial=TRUE",
+                                                   Request.Url.Host, Request.Url.Port, videos[col].VideoId)>
+                                        <div data-href=@string.Format("https://{0}:{1}/Video/Player?v={2}&ispartial=TRUE",
+                                                   Request.Url.Host, Request.Url.Port, videos[col].VideoId) data-type="anchor" 
+                                             class="col-xs-12 vid-ended-thumb-main-wrapper">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vid-ended-thumb-con">
+                                                <span class="duration">@videos[col].Duration</span>
+                                                <img src="@videos[col].Thumb" class="thum-img" title="@videos[col].Title" />
+                                            </div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            <a class="left carousel-control" href="#video-ended-related" data-slide="prev" role="button">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+            </a>
+            <a class="right carousel-control" href="#video-ended-related" data-slide="next" role="button">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@*@foreach (Video vid in Model)
+{
+    string url = string.Format("https://{0}:{1}/video/player?v={2}&ispartial=true", Request.Url.Host, Request.Url.Port, vid.VideoId);
+    <a href="@url" title="@vid.Title - @vid.Description" style="border-image: none; width: 100%; color: black; display: inline-block;"
+       data-ajax="true"
+       data-ajax-method="GET" data-ajax-update="#container" data-ajax-success="loadSuccess"
+       data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">
+        <div class="col-lg-12 col-xs-12 main-related-vid-img">
+            <div class="col-lg-6 col-xs-6 col-md-6 related-vid-thumb-con" style="padding:0">
+                <span class="duration">@vid.Duration</span>
+                <img src="@vid.Thumb" title="@vid.Title - @vid.Description" />
+            </div>
+            <div class="col-lg-5 col-xs-6 col-md-6 related-vid-desc">
+                <h5 style="font-weight:bold">@vid.Title</h5>
+            </div>
+        </div>
+    </a>
+}*@
+
+<script>
+    (function () {
+        var endVidAnchors = document.getElementsByClassName("rltd-vid-anchor");
+        var parentWindow = window.parent;
+        for (var i = 0; i < endVidAnchors.length; i++) {
+            endVidAnchors[i].addEventListener("click", function (e) {
+                var anchorTag = e.currentTarget;
+                var url = anchorTag.getAttribute("data-href");
+
+                parentWindow.getRelatedVid(url);
+            });
+        }
+    })();
+</script>

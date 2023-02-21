@@ -1,0 +1,210 @@
+﻿@model IEnumerable<vidosa.Models.SearchResults>
+@using vidosa.Models
+
+<div class="modal fade" id="course-preview">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width:80%">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title">Course Preview</h4>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div id="preview-container">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@using (VidosaContext context = new VidosaContext())
+{
+    <div class="col-lg-2"></div>
+    <div class="col-lg-9 col-md-9 col-md-offset-2 col-sm-12 srch-rslts-main-wrapper">
+        @foreach (var searchResult in Model)
+        {
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 srch-rslt-con">
+                <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12 srch-rslt-det-wrapper">
+                    <div class="col-xs-5 col-lg-3 col-sm-4 col-md-4 srch-rslt-thmb-wrapper">
+                        <a href=@string.Format("https://{0}:{1}/{2}",
+                     Request.Url.Host, Request.Url.Port, !searchResult.IsPost == true ? string.Format("video/player?v={0}&ispartial=true", searchResult.UrlId) : string.Format("blog/getpost?purl={0}&ispartial=true", searchResult.UrlId))
+                           data-ajax="true" data-ajax-method="GET"
+                           data-ajax-success="nextLoaded" data-ajax-update="#container"
+                           data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">
+                            <div class="col-lg-12 col-md-12 col-sm-5 col-xs-12 search-thumb-img-con">
+                                @if (!searchResult.IsPost)
+                                {
+                                    /* */
+                                    <span class="duration">@searchResult.Duration</span>
+                                }
+                                <img src="@searchResult.Thumb" alt="@searchResult.Title" title="@searchResult.Title" />
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-8 col-md-12 col-sm-7 col-xs-7 search-details-con">
+                        <div class="col-xs-12 col-sm-12 col-lg-12 srch-rslt-thmb-anchor-wrapper">
+                            <a href="@string.Format("https://{0}:{1}/{2}",
+                Request.Url.Host, Request.Url.Port, !searchResult.IsPost == true ? string.Format("video/player?v={0}&ispartial=true", searchResult.UrlId) : string.Format("blog/getpost?purl={0}&ispartial=true", searchResult.UrlId))"
+                               data-ajax="true" data-ajax-method="GET"
+                               data-ajax-success="nextLoaded" data-ajax-update="#container"
+                               data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">
+                                <div class="col-lg-12 col-xs-12 search-title">@searchResult.Title</div>
+                                <div class="col-lg-12 col-xs-12 search-des">
+                                    @*@searchResult.Blurb*@
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-xs-12 col-lg-12 col-sm-12 shpng-tools-wrapper">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                /**/
+                                if (!searchResult.IsPost)
+                                {
+                                    @*if (searchResult.IsSubscription && !(context.PremiumSubs.Where(ps => ps.Username == User.Identity.Name).FirstOrDefault() is null))
+                                        {
+                                            <span style="display:block;color:gray">Subscription</span>
+                                        }
+                                        else
+                                        {
+                                            /**/
+                                            ApplicationUser applicationUser = (from u in context.Users
+                                                                               where u.Email == User.Identity.Name
+                                                                               select u).FirstOrDefault();
+
+                                            Sales sale = (from s in context.Sales
+                                                          where s.CustomerId == applicationUser.UserId
+                                                          && s.ProductId == searchResult.Id && s.IsPaid
+                                                          select s).FirstOrDefault();
+
+                                            if (!(sale is null))
+                                            {
+                                                <span style="display:block;color:gray">Already bought the course</span>
+                                            }
+                                         }*@
+                                }
+                            }
+                            <div class="col-lg-12 col-xs-12 btn-shpng-cart-wrapper">
+                                @if (!searchResult.IsPost)
+                                {
+
+                                    Video video = context.Videos.ToList().Find(v => v.VideoId == searchResult.UrlId);
+                                    VideoDetails videoDetails = context.VideoDetails.ToList().Find(vd => vd.VideoId == video.VideoId);
+                                    video.VideoDetails = videoDetails.HtmlContent;
+                                    ViewsCounter viewsCounter = new ViewsCounter().GetViewsCounter(video.VideoId);
+                                    <div class="col-lg-12 col-xs-12 col-sm-12 col-md-12 viewership-details-wrapper">
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-3 srch-rslt-views-wrapper">
+                                            <span class="glyphicon glyphicon-eye-open"></span> @viewsCounter.Views
+                                        </div>
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-3 srch-rslt-likes-wrapper">
+                                            <span class="glyphicon glyphicon-hand-up"></span> @viewsCounter.Likes
+                                        </div>
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-3 srch-rslt-unlikes-wrapper">
+                                            <span class="glyphicon glyphicon-hand-down"></span> @viewsCounter.UnLikes
+                                        </div>
+                                    </div>
+                                    <div class="btn-more-info-add-cart col-xs-12 col-lg-12">
+                                        <div class="col-xs-4 col-lg-2 btn-more-info">
+                                            <a title="@video.Title"
+                                               data-content="@HttpUtility.HtmlDecode(video.VideoDetails)"
+                                               class="btn btn-primary btn-sm"
+                                               data-toggle="popover"
+                                               data-trigger="hover">More Info</a>
+                                        </div>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            ApplicationUser applicationUser = (from u in context.Users
+                                                                               where u.Email == User.Identity.Name
+                                                                               select u).FirstOrDefault();
+
+                                            Sales sales = (from s in context.Sales
+                                                           where s.CustomerId == applicationUser.UserId
+                                                           && s.ProductId == video.Id && s.IsPaid
+                                                           select s).FirstOrDefault();
+
+                                            if (sales is null)
+                                            {
+                                                if (video.IsSubscription && !
+                                                (context.PremiumSubs.Where(u => u.Username == applicationUser.Email).FirstOrDefault() is null))
+                                                {
+
+                                                    <div class="col-xs-4 btn-preview">
+                                                        <a href="~/Video/PreviewPlayer?v=@video.VideoId&ispartial=true" title="Preview - @video.Title" class="anchor-preview" data-ajax="true" data-ajax-loading="#async-page-loading-id"
+                                                           data-ajax-method="GET" data-ajax-update="#preview-container"
+                                                           data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">Preview</a>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    /**/
+                                                    <div class="col-xs-8 col-lg-3 btn-add-to-cart">
+                                                        <button data-ajax="true"
+                                                                data-ajax-loading="#async-page-loading-id"
+                                                                data-ajax-method="GET"
+                                                                data-ajax-update="#container"
+                                                                data-ajax-mode="replace"
+                                                                data-videoId="@video.VideoId"
+                                                                data-cart="true" data-ajax-begin="beforeasyncCall"
+                                                                class="btn-cart">
+                                                            Add to cart
+                                                        </button>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+
+                                                <div class="col-xs-8">
+                                                    <a href="~/Video/PreviewPlayer?v=@video.VideoId&ispartial=true" title="Preview - @video.Title" class="anchor-preview" data-ajax="true" data-ajax-loading="#async-page-loading-id"
+                                                       data-ajax-method="GET" data-ajax-update="#preview-container"
+                                                       data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">Preview</a>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+
+                                            <div class="col-xs-8 col-lg-3 btn-add-to-cart">
+                                                <button data-ajax="true"
+                                                        data-ajax-loading="#async-page-loading-id"
+                                                        data-ajax-method="GET"
+                                                        data-ajax-update="#container"
+                                                        data-ajax-mode="replace"
+                                                        data-videoId="@video.VideoId"
+                                                        data-cart="true" data-ajax-begin="beforeasyncCall"
+                                                        class="btn-cart">
+                                                    Add to cart
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-3"></div>
+}
+
+@*@if (ViewBag.IsAjax)
+    {
+        <input type="hidden" value="@ViewBag.Url" id="ajaxurl" />
+    }*@
+
+<script src="~/Scripts/customs/finance-scripts.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".anchor-preview").on("click", function () {
+            $("#course-preview").modal("show");
+        })
+
+        $("#course-preview").on("hidden.bs.modal", function () {
+            window.beforeasyncCall();
+            $("#preview-container").html("");
+        })
+    })
+</script>

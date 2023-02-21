@@ -1,0 +1,15 @@
+﻿@model IEnumerable<vidosa.Models.Video>
+@using vidosa.Models;
+
+@*@foreach (Video vid in Model)
+{
+    string url = string.Format("{0}://{1}:{2}/Video/Player?v={3}", Request.Url.Scheme, 
+        Request.Url.Host, Request.Url.Port, vid.VideoId);
+    <a href="@url" title="@vid.Title - @vid.Description">
+        <div class="col-lg-12">
+            <img src="@vid.Thumb" title="@vid.Title - @vid.Description" />
+            <h4>@vid.Title</h4>
+            <div>@vid.Description</div>
+        </div>
+    </a>
+}*@

@@ -1,0 +1,39 @@
+﻿
+<link href="~/Content/customs/uploadvideo.css" rel="stylesheet" />
+<h4>Async File Upload</h4>
+<div class="row">    
+    <div class="upload-icons-con col-lg-7 col-lg-offset-2" id="upload-plyer-con">
+        <div class="row col-lg-12 upload-tools-wrapper">
+            <div class="upload-icons-con col-lg-12 col-lg-offset-3">
+                <div class="col-lg-7 col-lg-offset-1 drag-icon-label">
+                    <span class="glyphicon glyphicon-download upload-icon"></span>
+                    <span class="text-msg"> Drag and Drop a File</span>
+                </div>
+                <div class="col-lg-6 btnsel-file">
+                    <input type="button" value="Select File" class="btn btn-primary col-lg-3 col-lg-offset-3" id="select-file" />
+                </div>                
+            </div>
+            <div class="col-lg-6 col-lg-offset-3 progress-bar-con">
+                <div class="progress col-lg-12">
+                    <div class="percent-value col-lg-12">0%</div>
+                    <div class="cust-progress-bar"></div>                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="button" id="select-thumb" value="Select Thumb" />
+
+<div class="row" id="uploadfileform">
+    
+</div>
+    <script>
+        (function () {
+            document.getElementById("select-file").addEventListener("click", function (e) {
+                openFile(uploadFile, e);
+            });
+            document.getElementById("select-thumb").addEventListener("click", function (e) {
+                openFile(uploadFile, e);
+            });
+        })()
+    </script>

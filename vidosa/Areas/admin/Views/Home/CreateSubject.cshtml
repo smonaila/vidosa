@@ -1,0 +1,12 @@
+﻿@model IEnumerable<vidosa.Models.Subject>
+
+@foreach (var subject in Model)
+{
+    <tr>
+        <td>@subject.Id</td>
+        <td>@subject.SubjectId</td>
+        <td>@subject.Name</td>
+        <td>@subject.Description</td>
+    </tr>
+}
+

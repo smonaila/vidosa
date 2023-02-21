@@ -1,0 +1,233 @@
+﻿@model IEnumerable<vidosa.Models.Post>
+@using vidosa.Models;
+
+@{
+
+}
+
+<link href="~/Content/customs/blog.css" rel="stylesheet" />
+
+<div class="col-lg-8 col-lg-offset-3 col-sm-12 col-md-12 col-xs-12 vdm-pager-wraper">
+    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <ul class="pager pager-previous">
+            <li>
+                @if (Utility.IsCrawlbot(Request))
+                {
+                    <a href="/blog/getnextpage/@string.Format("{0}", ViewBag.prev)" title="Vidosa - Previous Posts Page">Previous</a>
+                }
+                else
+                {
+                    /* */
+                    @Ajax.ActionLink(string.Format("{0}", "Previous"),
+                    string.Format("{0}", "getnextpage"), string.Format("{0}", "blog"),
+                    new
+                    {
+                        ispartial = true,
+                        @page=string.Format("{0}", ViewBag.prev)
+                    },
+                    new AjaxOptions()
+                    {
+                        UpdateTargetId = "container",
+                        HttpMethod = "GET",
+                        InsertionMode = InsertionMode.Replace,
+                        OnBegin = "beforeasyncCall"
+                    },
+                    new
+                    {
+                        // @class = "more-link"
+                    })
+                }
+            </li>
+        </ul>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <ul class="pager pager-next">
+            <li>
+                @if (Utility.IsCrawlbot(Request))
+                {
+                    <a href="/blog/getnextpage/@string.Format("{0}", ViewBag.next)" title="Vidosa - Next Post Page">Next</a>
+                }
+                else
+                {
+                    /* */
+                    @Ajax.ActionLink(string.Format("{0}", "Next"),
+                    string.Format("{0}", "getnextpage"), string.Format("{0}", "blog"),
+                    new
+                    {
+                        ispartial = true,
+                        @page=string.Format("{0}", ViewBag.next)
+                    },
+                    new AjaxOptions()
+                    {
+                        UpdateTargetId="container",
+                        HttpMethod="GET",
+                        InsertionMode=InsertionMode.Replace,
+                        OnBegin="beforeasyncCall"
+                    },
+                    new
+                    {
+                        //@class = "more-link"
+                    })
+                }
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="post-list-wrapper col-lg-8 col-lg-offset-2">
+    @foreach (Post Post in Model)
+    {
+        <div class="row post-list-con">
+            <div class="col-lg-12 col-md-6 col-xs-12 vdm-post-wrap">
+                <div class="media">
+                    <div class="row">
+                        <div class="col-lg-3 col-xs-12 vdm-post-thumb">
+                            <div class="media-left media-con">
+                                <img class="" src="~/Images/postthumbs/blog-post-thumb-8.jpg" alt="@Post.Title" />
+                            </div>
+                        </div>
+                        <div class="col-lg-9 col-xs-12 vdm-post-det">
+                            <div class="media-body">
+                                <h3 class="title">
+                                    @if (Utility.IsCrawlbot(Request))
+                                    {
+                                        /* */
+                                        <a href="@string.Format("/blog/getpost/{0}", Post.PostUrl)" title="@Post.Title">@Post.Title</a>
+                                    }
+                                    else
+                                    {
+                                        /* */
+                                        @Ajax.ActionLink(string.Format("{0}", Post.Title),
+                                        string.Format("{0}", "getpost"), string.Format("{0}", "blog"),
+                                        new
+                                        {
+                                            ispartial = true,
+                                            purl=Post.PostUrl
+                                        },
+                                        new AjaxOptions()
+                                        {
+                                            UpdateTargetId="container",
+                                            HttpMethod="GET",
+                                            InsertionMode=InsertionMode.Replace,
+                                            OnBegin="beforeasyncCall",
+                                            OnSuccess = "loadSuccess"
+                                        },
+                                        new
+                                        {
+                                            //@class = "more-link"
+                                        })
+                                    }
+                                </h3>
+                                @if (!Utility.IsCrawlbot(Request))
+                                {
+                                    <div class="meta"><span class="date">@Post.PusblishedDate </span><span class="time">5 min read </span><span class="comment"><a href="#">4 comments</a></span></div>
+                                }
+                                <div class="intro">@Post.Blurb</div>
+                                @if (Utility.IsCrawlbot(Request))
+                                {
+                                    /* */
+                                    <a class="more-link" href="@string.Format("/blog/getpost/{0}", Post.PostUrl)" title="@Post.Title">Read more &rarr;</a>
+                                }
+                                else
+                                {
+                                    /**/
+                                    @Ajax.ActionLink(string.Format("{0}", "Read more"),
+                                    string.Format("{0}", "getpost"), string.Format("{0}", "blog"),
+                                    new
+                                    {
+                                        ispartial = true,
+                                        purl=Post.PostUrl
+                                    },
+                                    new AjaxOptions()
+                                    {
+                                        UpdateTargetId = "container",
+                                        HttpMethod = "GET",
+                                        InsertionMode = InsertionMode.Replace,
+                                        OnBegin = "beforeasyncCall",
+                                        OnSuccess = "loadSuccess"
+                                    },
+                                    new
+                                    {
+                                        @class = "more-link"
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@if (Request.IsAjaxRequest())
+{
+    <meta name="author" content="@ViewBag.Author" />
+    <meta name="keywords" content="@ViewBag.Keywords" />
+    <meta name="description" content="@ViewBag.Description" />
+}
+<div class="col-lg-8 col-lg-offset-3 col-sm-12 col-md-12 col-xs-12 vdm-pager-wraper">
+    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <ul class="pager pager-previous">
+            <li>
+                @if (Utility.IsCrawlbot(Request))
+                {
+                    <a href="/blog/getnextpage/@string.Format("{0}", ViewBag.prev)" title="Vidosa - Previous Posts Page">Previous</a>
+                }
+                else
+                {
+                    /* */
+                    @Ajax.ActionLink(string.Format("{0}", "Previous"),
+                     string.Format("{0}", "getnextpage"), string.Format("{0}", "blog"),
+                     new
+                     {
+                         ispartial = true,
+                         @page=string.Format("{0}", ViewBag.prev)
+                     },
+                     new AjaxOptions()
+                     {
+                         UpdateTargetId = "container",
+                         HttpMethod = "GET",
+                         InsertionMode = InsertionMode.Replace,
+                         OnBegin = "beforeasyncCall"
+                     },
+                     new
+                     {
+                         //@class = "more-link"
+                     })
+                }
+            </li>
+        </ul>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <ul class="pager pager-next">
+            <li>
+                @if (Utility.IsCrawlbot(Request))
+                {
+                    <a href="/blog/getnextpage/@string.Format("{0}", ViewBag.next)" title="Vidosa - Next Post Page">Next</a>
+                }
+                else
+                {
+                    /* */
+                    @Ajax.ActionLink(string.Format("{0}", "Next"),
+                    string.Format("{0}", "getnextpage"), string.Format("{0}", "blog"),
+                    new
+                    {
+                        ispartial = true,
+                        @page=string.Format("{0}", ViewBag.next)
+                    },
+                    new AjaxOptions()
+                    {
+                        UpdateTargetId = "container",
+                        HttpMethod = "GET",
+                        InsertionMode = InsertionMode.Replace,
+                        OnBegin = "beforeasyncCall"
+                    },
+                    new
+                    {
+                        //@class = "more-link"
+                    })
+                }
+            </li>
+        </ul>
+    </div>
+</div>
+

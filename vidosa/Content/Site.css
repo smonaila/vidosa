@@ -1,0 +1,137 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    background-color:rgba(30, 30, 30, 0.9);
+}
+#menu .menuitem li span{
+    background-color:gray;
+}
+#menu .menuitem li a{
+    color: black;
+}
+.duration {
+    position: absolute;
+    margin-left: 72%;
+    margin-top: 45%;
+    background-color: rgba(0,0,0,0.9);
+    color: white;
+}
+.ui-autocomplete {
+    z-index: 100000;
+}
+video {
+    width: 100%;
+}
+.social-media-img a img {
+    border-radius: 20px;
+}
+.social-media-img a {
+    text-decoration: none;
+}
+.card {
+    border: 1px solid gray;
+    width:100%;
+}
+.card img{
+    width:100%;
+}
+.card-title {
+    font-weight: bold;
+}
+.card-body {
+    padding: 5px;
+    color: black;
+    background-color: white;
+}
+
+.custom-container {
+    margin-left: 0px;
+    width: 100%;
+    margin-top: 0%;
+}
+iframe body {
+    padding: 0;
+}
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+/* Set width on the form input elements since they're 100% wide by default */
+/*input,
+select,
+textarea {
+    width:100%;
+}*/
+.menu-forms {
+    border: 1px solid red;
+}
+.header-container {
+    margin-left: 0px;
+    margin-right: 0px;
+    width: 100%;
+    background-color: blue;
+}
+#searchbar {
+    border: 1px solid yellow;
+    margin-top: 0.5%;
+    width: 99%;
+    padding: 0;
+}
+.searchbar-container {
+    margin-top: 0.5%;
+    padding: 0;
+}
+.formcontainer {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+.description > p,h2 {
+    color: black;
+}
+address{
+    color:black;
+}
+.menuitem {
+    /* border: 1px solid red; */
+    padding: 0;
+    width: 100%;
+}
+    .menuitem > li {
+        display: block;
+        margin: 5%;
+        /* border: 1px solid red; */
+    }
+    .menuitem > li > a {
+        list-style: none;
+        text-decoration: none;
+    }
+    #menu {
+        width: 125%;
+        margin-top: 4%;
+    }
+#createaccount {
+    background-color: blue;
+    opacity: 0.9;
+    color: white;
+}
+.form-horizontal h5{
+    color: white;
+    font-weight:bold;
+}
+.form-horizontal p, .form-container p{
+    color: white;
+}
+
+
+
+
+
+

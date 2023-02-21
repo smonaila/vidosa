@@ -1,0 +1,133 @@
+﻿@model vidosa.Areas.admin.Models.UploadFileView
+@using vidosa.Models
+@{
+
+}
+
+<style>
+    .edt-thumb {
+        width: 100%;
+    }
+
+    #edt-select-thumb {
+        background-color: gray;
+        min-height: 113px;
+        padding: 0;
+    }
+        #edt-select-thumb span {
+            left: 45%;
+            position: absolute;
+            top:50%;
+        }
+    #edt-select-thumb:hover{
+        cursor:pointer;
+    }
+</style>
+<div class="row">
+    <div class="col-lg-8 col-lg-offset-2"
+         data-video-width="@ViewBag.VideoWidth"
+         data-video-height="@ViewBag.VideoHeight"
+         data-video-ar="@ViewBag.AspectRatio" id="player-metrics">
+
+        <div class="frameCon-plchldr" id="frame-wrapper"></div>
+
+        @*@Html.Action("PreviewPlayer", "Video",
+            new
+            {
+                v=Model.VideoId
+            })*@
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 col-lg-offset-2">
+        <div class="col-lg-2" id="edt-select-thumb">
+            <span class="glyphicon glyphicon-picture"></span>
+        </div>
+        <div class="col-lg-2" id="edt-selected-thumb">
+            <img src="@ViewBag.ThumUrl" class="edt-thumb" />
+        </div>
+        <div class="col-lg-2">
+            <img src="@ViewBag.ThumUrl" class="edt-thumb" />
+        </div>
+        <div class="col-lg-2">
+            <img src="@ViewBag.ThumUrl" class="edt-thumb" />
+        </div>
+        <div class="col-lg-2">
+            <img src="@ViewBag.ThumUrl" class="edt-thumb" />
+        </div>
+    </div>
+
+    <div class="col-lg-6 col-lg-offset-2">
+        @using (Ajax.BeginForm("UpdateVideo",
+            new
+            {
+            },
+            new AjaxOptions()
+            {
+                HttpMethod = "post",
+                UpdateTargetId = "container",
+                InsertionMode = InsertionMode.Replace
+            },
+            new
+            {
+                id = "updateVideoForm"
+            }))
+        {
+            <input type="hidden" id="videoId" name="videoId" value="@Model.VideoId" />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="form-group">
+                <div class="col-lg-4">
+                    @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-lg-8">
+                    @Html.EditorFor(model => model.Keywords, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Keywords, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-lg-12">
+                    @Html.EditorFor(model => model.Blurb, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Blurb, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-lg-12">
+                    <figure>
+                        <figcaption>
+                            <div class="dropdown show">
+                                <button class="btn btn-primary dropdown-toggle" role="button" id="insert-url-img" data-toggle="dropdown"
+                                        aria-haspopup="true" aria-expanded="false">
+                                    Insert <span class="glyphicon glyphicon-chevron-down"></span>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="insert-url-img">
+                                    <ul>
+                                        <li><a href="#" onclick="showInsertUrlModal()" role="button" class="insert-anchor"><span class="glyphicon glyphicon-link"></span> Insert link</a></li>
+                                        <li><a href="#" onclick="showInsertImgModal()" role="button" class="insert-img"><span class="glyphicon glyphicon-picture"></span> Image</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </figcaption>
+                        @Html.TextAreaFor(model =>  model.HtmlCode, new { @class = "", cols = 130, rows = 15 })
+                        @Html.ValidationMessageFor(model => model.HtmlCode, "", new { @class = "text-danger" })
+                    </figure>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="col-lg-8">
+                    <input type="submit" value="Save Changes" class="btn btn-primary" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    (function () {
+        document.getElementById("edt-select-thumb").addEventListener("click", function (e) {
+            openFile(uploadFile, e);
+        });
+    })()
+</script>

@@ -1,0 +1,126 @@
+﻿@model IEnumerable<vidosa.Models.Video>
+@using vidosa.Models;
+@{
+    ViewBag.Title = string.Format("Videmy - {0}", "Learn the C# Programming from our beginners list of courses and upskill by buying to jump into the Advanced features of .NET using the C# language.");
+    var rows = Math.Floor((decimal)Model.Count() / 5) + Model.Count() % 5;
+    Video[] sourceArray = Model.ToArray();
+    int currentIndex = 0;
+}
+<div class="row vdm-hm-wrapper">   
+    <div class="row hm-lst-videos col-lg-10 col-lg-offset-2">        
+        @for (int row = 0; row <= rows; row++)
+        {
+            List<Video> videos = new List<Video>();
+            if (sourceArray.Length - currentIndex <= 4)
+            {
+                videos = sourceArray.Skip(currentIndex).Take(sourceArray.Length - currentIndex).ToList();
+                currentIndex += sourceArray.Length - currentIndex;
+            }
+            else
+            {
+                videos = sourceArray.Skip(currentIndex).Take(4).ToList();
+                currentIndex += 4;
+            }
+            <div class="row av-course-con col-lg-offset-4">
+                @for (int col = 0; col < videos.Count; col++)
+                {
+                    <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12 hm-linked-div">
+                        <a href=@string.Format("{0}", Utility.IsCrawlbot(Request) is true ? string.Format("https://{0}:{1}/Video/Player/v={2}",
+Request.Url.Host, Request.Url.Port, videos[col].VideoId) : string.Format("https://{0}:{1}/Video/Player?v={2}",
+Request.Url.Host, Request.Url.Port, videos[col].VideoId))
+                           title="@videos[col].Title" style="text-decoration:none"
+                           data-ajax="true"
+                           data-ajax-method="GET" data-ajax-update="#container"
+                           data-ajax-mode="replace" data-ajax-begin="beforeasyncCall"
+                           data-ajax-success="nextLoaded" data-ajax-failure="">
+                            <div class="row hm-ava-course-row">
+                                <div class="col-lg-12 col-md-12 col-sm-5 col-xs-12 hm-thumb-con">
+                                    @if (!Utility.IsCrawlbot(Request))
+                                    {
+                                        <span class="duration">@videos[col].Duration</span>
+                                    }
+                                    <img src="@videos[col].Thumb" class="thum-img" title="@videos[col].Title" alt="@videos[col].Title" />
+                                </div>
+                                <div class="col-lg-12 col-md-12 col-sm-7 col-xs-12 hm-ava-desc">
+                                    <div class="card-body">
+                                        <div class="acc-icon-wrapper col-xs-12">
+                                            @{
+                                                using (VidosaContext vidosaContext = new VidosaContext())
+                                                {
+                                                    ApplicationUser applicationUser = vidosaContext.Users.ToList().Where(u => u.Id == videos[col].UserId).ToList().FirstOrDefault();
+                                                    int CountViews = (from view in vidosaContext.VideoViews.ToList()
+                                                                      where view.VideoId == videos[col].VideoId
+                                                                      select view).ToList().Count;
+
+                                                    var NowDate = DateTime.Now;
+                                                    var Diff = NowDate - videos[col].DatePublished;
+                                                    var FormatDate = string.Empty;
+
+                                                    if (Diff.TotalSeconds < 60)
+                                                    {
+                                                        FormatDate = string.Format("{0} {1}", Math.Ceiling(Diff.TotalSeconds), Math.Ceiling(Diff.TotalSeconds) > 1 ? "seconds ago" : "minute ago");
+                                                    }
+                                                    if (Diff.TotalMinutes < 60 && Diff.TotalSeconds > 60)
+                                                    {
+                                                        FormatDate = string.Format("{0} {1}", Math.Ceiling(Diff.TotalMinutes), Math.Ceiling(Diff.TotalMinutes) > 1 ? "minutes ago" : "minute ago");
+                                                    }
+                                                    if (Diff.TotalHours <= 24 && Diff.TotalMinutes > 60)
+                                                    {
+                                                        FormatDate = string.Format("{0} {1}", Math.Ceiling(Diff.TotalHours), Math.Ceiling(Diff.TotalHours) > 1 ? "hours ago" : "hour ago");
+                                                    }
+                                                    if (Diff.TotalDays <= 7 && Diff.TotalHours > 24)
+                                                    {
+                                                        FormatDate = string.Format("{0} {1}", Diff.TotalDays, Diff.TotalDays > 1 ? "days ago" : "day ago");
+                                                    }
+                                                    if (Diff.TotalDays > 7 && Diff.TotalDays < 31)
+                                                    {
+                                                        FormatDate = string.Format("{0} {1}", Math.Ceiling(Diff.TotalDays / 7), Math.Ceiling(Diff.TotalDays / 7) > 1 ? "weeks ago" : "weeks ago");
+                                                    }
+                                                    if (Diff.TotalDays > 31 && Diff.TotalDays < 365)
+                                                    {
+                                                        FormatDate = string.Format("{0} {1}", Math.Ceiling(Diff.TotalDays / 31), Math.Ceiling(Diff.TotalDays / 31) > 1 ? "months ago" : "month ago");
+                                                    }
+                                                    if (Diff.TotalDays > 365)
+                                                    {
+                                                        FormatDate = string.Format("{0} {1}", Math.Ceiling(Diff.TotalDays / 365), Math.Ceiling(Diff.TotalDays / 365) > 1 ? "years ago" : "year ago");
+                                                    }
+                                                    <div class="acc-icon col-lg-2 col-xs-2">                                                        
+                                                        <img src="/Images/@applicationUser.ProfilePic" style="width: 100%;border-radius: 50%;">
+                                                    </div>
+                                                    <div class="acc-title col-lg-9">
+                                                        <h5 class="card-title card-title-overflow">@videos[col].Title</h5>
+                                                        <p>
+                                                            <span class="acc-name">@string.Format("{0} {1}", applicationUser.FirstName, applicationUser.LastName) </span>
+                                                            <span class="count-views">@string.Format("{0} {1}", CountViews, CountViews > 1 ? "views" : "view") &bull; @FormatDate</span>
+                                                        </p>                              
+                                                    </div>
+                                                }
+                                            }
+                                        </div>                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @* Check to see if this is an Async Request *@
+    @if (ViewBag.IsAjax)
+    {
+        <input type="hidden" value="@ViewBag.Url" id="ajaxurl" />
+    }
+</div>
+@if (Request.IsAjaxRequest())
+{
+    <meta name="author" content="@ViewBag.Author" />
+    <meta name="keywords" content="@ViewBag.Keywords" />
+    <meta name="description" content="@ViewBag.Description" />
+    <meta name="title" content=@string.Format("Videmy - {0}", "Learn the C# Programming from our beginners list of courses and upskill by buying to jump into the Advanced features of .NET using the C# language.") />
+}
+
+<script>
+     
+</script>

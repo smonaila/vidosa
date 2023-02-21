@@ -1,0 +1,41 @@
+﻿<div class="player-container">
+    <img src="~/Images/loading.gif" style="width:10%;position:absolute;display:block" class="loading-img" />
+    <span class="custom-btn-play"></span>
+    <video id="vidplayer" autoplay style="width:100%;" title="@Model.Title"></video>
+    <div class="controls-container">
+        <div class="progress-tape"></div>
+        <div class="progress-buffered"></div>
+        <div class="custom-progress" style="height:6px;">
+
+        </div>
+        <span class="glyphicon glyphicon-play btn-play"></span>
+        <span class="glyphicon glyphicon-pause btn-pause"></span>
+        <span class="quality-asterick glyphicon glyphicon-asterisk"
+              data-toggle="collapse" data-target="#qualities"></span>
+        <span class="timeduration"></span>
+        <div class="collapse" id="qualities">
+            @using (VidosaContext Context = new VidosaContext())
+            {
+            if (User.Identity.IsAuthenticated)
+            {
+            if (Context.PremiumSubs.ToList().Exists(pu => pu.Username == User.Identity.Name))
+            {
+            foreach (BandWidth bandWidth in Context.BandWidths)
+            {
+            <span id="@bandWidth.Name" class="bandwidth" value="@bandWidth.Value">@bandWidth.Name</span>
+            }
+            }
+            else
+            {
+            <span id="360p" class="bandwidth" value="360p">360p</span>
+            }
+            }
+            }
+        </div>
+    </div>
+</div>
+<input type="hidden" value="@Model.VideoId" id="videoId" title="@Model.Title" />
+<input type="hidden" value="HD" id="bandwidth" />
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/customs/player.js"></script>

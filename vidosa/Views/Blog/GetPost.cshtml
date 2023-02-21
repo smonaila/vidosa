@@ -1,0 +1,357 @@
+﻿@model vidosa.Models.Post
+@using vidosa.Models
+@{
+    List<Post> relatedPosts = (List<Post>)ViewBag.relatedPosts;
+    string keywords = ViewBag.Keywords;
+    List<string> tags = keywords.Split(',').ToList();
+    List<Video> RelatedVideos = (List<Video>)ViewBag.RelatedVideos;
+    List<Post> PostsInSubject = (List<Post>)ViewBag.PostInSubject;
+}
+<link href="~/Content/customs/blog.css" rel="stylesheet" />
+@Scripts.Render("~/scripts/plugins")
+@Scripts.Render("~/_scripts/customs")
+
+@*<div class="well-lg">
+    <p>Please Note that this site is under construction, only the blog part is working.</p>
+    <p>The blog can be accessed throgh the menu. The videos links are not working yet.</p>
+</div>*@
+
+<div class="row">
+    
+</div>
+<div class="row">
+    <div class="col-lg-2 chapter-list-wrapper">
+        <ul class="list-chapters">
+            @for (int i = 0; i < PostsInSubject.Count; i++)
+            {
+                if (PostsInSubject[i].PostKey == Model.PostKey)
+                {
+                    <li class="active-post">
+                        <a href=@string.Format("/blog/getpost?purl={0}", PostsInSubject[i].PostUrl) title="@PostsInSubject[i].Title"
+                           data-ajax="true" data-ajax-begin="beforeasyncCall" data-ajax-method="get" data-ajax-success="loadSuccess"
+                           data-ajax-update="#container">@PostsInSubject[i].Title</a>
+                    </li>
+                }
+                else
+                {
+                    <li>
+                        <a href=@string.Format("/blog/getpost?purl={0}", PostsInSubject[i].PostUrl) title="@PostsInSubject[i].Title"
+                           data-ajax="true" data-ajax-begin="beforeasyncCall" data-ajax-method="get" data-ajax-success="loadSuccess"
+                           data-ajax-update="#container">@PostsInSubject[i].Title</a>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+
+    <div class="col-sm-12 col-lg-10 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-8 col-sm-12 col-md-8 col-xs-12 vdm-pager-wraper">
+            <div class="col-lg-6 col-xs-6 col-sm-6 col-md-6">
+                <ul class="pager">
+                    <li class="previous">
+                        @if (Utility.IsCrawlbot(Request))
+                        {
+                            /* */
+                            <a href=@string.Format("/blog/getpost/{0}", @ViewBag.prevurl) title="@Model.Title">Previous</a>
+                        }
+                        else
+                        {
+                            /* */
+                            @Ajax.ActionLink(string.Format("{0}", "Previous"),
+                            string.Format("{0}", "getpost"), string.Format("{0}", "blog"),
+                            new
+                            {
+                                ispartial = true,
+                                purl = string.Format("{0}", ViewBag.prevurl)
+                            },
+                            new AjaxOptions()
+                            {
+                                UpdateTargetId = "container",
+                                HttpMethod = "GET",
+                                InsertionMode = InsertionMode.Replace,
+                                OnBegin = "beforeasyncCall"
+                            },
+                            new
+                            {
+                                @class = "more-link"
+                            })
+                        }
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-6 col-xs-6 col-sm-6 col-md-6">
+                <ul class="pager">
+                    <li>
+                        @if (Utility.IsCrawlbot(Request))
+                        {
+                            /* */
+                            <a href=@string.Format("/blog/getpost/{0}", @ViewBag.nexturl) title="@Model.Title">Previous</a>
+                        }
+                        else
+                        {
+                            /* */
+                            @Ajax.ActionLink(string.Format("{0}", "Next"),
+                            string.Format("{0}", "getpost"), string.Format("{0}", "blog"),
+                            new
+                            {
+                                ispartial = true,
+                                purl=string.Format("{0}", ViewBag.nexturl)
+                            },
+                            new AjaxOptions()
+                            {
+                                UpdateTargetId = "container",
+                                HttpMethod = "GET",
+                                InsertionMode = InsertionMode.Replace,
+                                OnBegin = "beforeasyncCall"
+                            },
+                            new
+                            {
+                                @class = "more-link"
+                            })
+                        }
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <article class="blog-post col-lg-8 col-md-8 col-sm-12 col-xs-12">
+            <div class="col-lg-12 col-xs-12 col-md-12 col-xs-12 vdm-post-content">
+                @*<header class="blog-post-header">
+                    <h2 class="title">@Model.Title</h2>
+                    <p>@Model.Blurb</p>
+                    @if (!Utility.IsCrawlbot(Request))
+                    {
+                        <div class="meta"><span class="date"><b>Published: </b> @Model.PusblishedDate</span><span class="time">5 min read</span><span class="comment"><a href="#"> 4 comments</a></span></div>
+                    }
+                </header>*@
+                <div class="blog-post-body col-lg-12">
+                    <h2 class="post-title">@Model.Title</h2>
+                    @*<figure class="blog-banner">
+                        <a href="https://made4dev.com">
+                            <img class="img-fluid" src="/images/EditedImage/blog-post-banner.jpg" alt="image">
+                        </a>
+                        <figcaption class="mt-2 text-center image-caption">Image Credit: <a href="https://made4dev.com?ref=devblog" target="_blank">made4dev.com (Premium Programming T-shirts)</a></figcaption>
+                    </figure>*@
+                    @Html.Raw(HttpUtility.HtmlDecode(Model.Content))
+                </div>
+            </div>
+        </article>
+        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 vdm-news-letter-wrapper">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="news-letter-wrapper">
+                @Html.Action("NewsLetter", "Account")
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="accordion col-lg-12 col-md-12 col-sm-12 current-post-right-side-bar" id="post-side-bar">
+                    <h5>Author</h5>
+                    <div>
+                        <div class="author-info-wrapper">
+                            <div class="author-names">
+                                <div class="first-name">
+                                    <span class="first-name-label">FirstName:</span>
+                                    <span class="author-firstname">Kgotliso</span>
+                                </div>
+                                <div class="last-name">
+                                    <span class="last-name-label">LastName:</span>
+                                    <span class="author-lastname">Monaila</span>
+                                </div>
+                            </div>
+                            <div class="post-date-info-wrapper">
+                                <span class="post-creation-label">Date Created:</span>
+                                <span class="post-creation-date">@Model.PusblishedDate</span>
+                                <span class="post-updates-label">Last Updated:</span>
+                                <span class="post-last-update-date">@Model.DateUpdated</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h5>Related Links</h5>
+                    <div>
+                        <ul>
+                            @foreach (Post post in relatedPosts)
+                            {
+                                <li>
+                                    @if (Utility.IsCrawlbot(Request))
+                                    {
+                                        /* */
+                                        <a href=@string.Format("/blog/getpost/{0}", post.PostUrl) title="@post.Title">@post.Title</a>
+                                    }
+                                    else
+                                    {
+                                        /* */
+                                        @Ajax.ActionLink(string.Format("{0}", post.Title),
+                                         string.Format("{0}", "getpost"), string.Format("{0}", "blog"),
+                                         new
+                                         {
+                                             ispartial = true,
+                                             purl = string.Format("{0}", post.PostUrl)
+                                         },
+                                         new AjaxOptions()
+                                         {
+                                             UpdateTargetId = "container",
+                                             HttpMethod = "GET",
+                                             InsertionMode = InsertionMode.Replace,
+                                             OnBegin = "beforeasyncCall"
+                                         },
+                                         new
+                                         {
+                                             @class = "more-link"
+                                         })
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <h5>Related Videos</h5>
+                    <div>
+                        @foreach (Video video in RelatedVideos)
+                        {
+                            <a href="@string.Format("{0}", Utility.IsCrawlbot(Request) is true ? string.Format("https://{0}:{1}/Video/Player/v={2}",
+                   Request.Url.Host, Request.Url.Port, video.VideoId) : string.Format("https://{0}:{1}/Video/Player?v={2}&ispartial=true",
+                   Request.Url.Host, Request.Url.Port, video.VideoId))"
+                               title="@video.Title" data-ajax="true"
+                               data-ajax-method="get"
+                               data-ajax-success="loadSuccess"
+                               data-ajax-begin="beforeasyncCall"
+                               data-ajax-update="#container">
+                                <div class="post-related-videos-wrapper col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="pst-rltd-vid-thumb-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-4">
+                                        <span class="duration">@video.Duration</span>
+                                        <img src="~/videos/thumbs/ZyPB5QnZZaL7NFRe4rwhjrI7gkrW511kshX3c7mhiRaLW3mho6sSiD9nSvq04ptLta4X0dJLv7C71OZxNXQ.png"
+                                             title="@video.Title" alt="@video.Title" />
+                                    </div>
+                                    <div class="pst-rltd-vid-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-8">
+                                        <h6>@video.Title</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                    <h5>Tags</h5>
+                    <div>
+                        <ul class="pager">
+                            @foreach (string tag in tags)
+                            {
+                                <li>
+                                    @if (Utility.IsCrawlbot(Request))
+                                    {
+                                        <a href=@string.Format("/video/gethashtags/#{0}", tag.Replace(" ", "").Replace(".", "dot").Trim()) title="#@tag">#@tag</a>
+                                    }
+                                    else
+                                    {
+                                        @Ajax.ActionLink(string.Format("#{0}", tag.Replace(" ", "").Replace(".", "dot").Trim()),
+                                        string.Format("{0}", "gethashtags"), string.Format("{0}", "video"),
+                                        new
+                                        {
+                                            ispartial = true,
+                                            hashtag = string.Format("#{0}", tag.Replace(" ", "").Replace(".", "dot").Trim()),
+                                            pid = string.Format("{0}", Model.PostKey)
+                                        },
+                                        new AjaxOptions()
+                                        {
+                                            UpdateTargetId = "container",
+                                            HttpMethod = "GET",
+                                            InsertionMode = InsertionMode.Replace,
+                                            OnBegin = "beforeasyncCall"
+                                        },
+                                        new
+                                        {
+                                            @class = "more-link"
+                                        })
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<b />
+<div class="row">
+    <div class="col-lg-7 col-lg-offset-2 col-sm-12 col-md-8 col-xs-12 vdm-pager-wraper">
+        <div class="col-lg-6 col-xs-6 col-sm-6 col-md-6">
+            <ul class="pager">
+                <li class="previous">
+                    @if (Utility.IsCrawlbot(Request))
+                    {
+                        /* */
+                        <a href=@string.Format("/blog/getpost/{0}", @ViewBag.prevurl) title="@Model.Title">Previous</a>
+                    }
+                    else
+                    {
+                        /**/
+                        @Ajax.ActionLink(string.Format("{0}", "Previous"),
+                        string.Format("{0}", "getpost"), string.Format("{0}", "blog"),
+                        new
+                        {
+                            ispartial = true,
+                            purl=string.Format("{0}", ViewBag.prevurl)
+                        },
+                        new AjaxOptions()
+                        {
+                            UpdateTargetId = "container",
+                            HttpMethod = "GET",
+                            InsertionMode = InsertionMode.Replace,
+                            OnBegin = "beforeasyncCall"
+                        },
+                        new
+                        {
+                            @class = "more-link"
+                        })
+                    }
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg-6 col-xs-6 col-sm-6 col-md-6">
+            <ul class="pager">
+                <li>
+                    @if (Utility.IsCrawlbot(Request))
+                    {
+                        /* */
+                        <a href=@string.Format("/blog/getpost/{0}", @ViewBag.nexturl) title="@Model.Title">Next</a>
+                    }
+                    else
+                    {
+                        /* */
+                        @Ajax.ActionLink(string.Format("{0}", "Next"),
+                        string.Format("{0}", "getpost"), string.Format("{0}", "blog"),
+                        new
+                        {
+                            ispartial = true,
+                            @purl=string.Format("{0}", ViewBag.nexturl)
+                        },
+                        new AjaxOptions()
+                        {
+                            UpdateTargetId = "container",
+                            HttpMethod = "GET",
+                            InsertionMode = InsertionMode.Replace,
+                            OnBegin = "beforeasyncCall"
+                        },
+                        new
+                        {
+                            //@class = "more-link"
+                        })
+                    }
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12 col-md-12 pst-main-cmnt-wrapper">
+        <div class="col-lg-7 col-lg-offset-2 pst-cmnt-wrapper">
+            @Html.Action("getcomments", "blog",
+                                new
+                                {
+                                    ct=CommentType.Post,
+                                    key=Model.PostKey
+                                })
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#post-side-bar").accordion({ heightStyle: "panel" });
+    })
+</script>
+

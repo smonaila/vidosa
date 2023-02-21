@@ -1,0 +1,74 @@
+﻿@model vidosa.Models.Video
+@using vidosa.Models
+@{
+
+}
+@using (VidosaContext vidosaContext = new VidosaContext())
+{    
+        <div class="col-lg-12 col-xs-12 views-likes-subs-wrapper">
+            <div class="col-lg-12 col-xs-12 vid-reaction-main-wrapper">
+                <div class="col-lg-2 col-xs-4 vid-rctn-views-wrapper">
+                    <span class="view-counter-wrap">
+                        <span class="view-counter"><span class="glyphicon glyphicon-eye-open"></span>  @ViewBag.ViewsCounter</span>
+                        <span class="view-counter-str">@string.Format("{0}", ViewBag.ViewsCounter > 1 ? "views" : "view")</span>
+                    </span>
+                </div>
+                <div class="col-lg-2 col-xs-4 col-lg-offset-6 vid-rctn-likes-wrapper">
+                    <span class="vd-like">
+                        <span class="glyphicon glyphicon-hand-up like-icon reaction col-lg-12 col-xs-12" data-contentId="@Model.VideoId" data-contentType="2" data-reactionType="1"></span>
+                        <span class="like-counter col-lg-12 col-xs-12">@string.Format("{0}", ViewBag.VideoLikes > 1 ? string.Format("{0} {1}", ViewBag.VideoLikes, "Likes") : string.Format("{0} {1}", ViewBag.VideoLikes, "Like"))</span>
+                    </span>
+                </div>
+                <div class="col-lg-2 col-xs-4 vid-rctn-unlikes-wrapper">
+                    <span class="vd-unlike">
+                        <span class="glyphicon glyphicon-hand-down unlike-icon reaction col-lg-12 col-xs-12" data-contentId="@Model.VideoId" data-contentType="2" data-reactionType="2"> </span>
+                        <span class="unlike-counter col-lg-12 col-xs-12">@string.Format("{0}", ViewBag.VideoUnlike > 1 ? string.Format("{0} {1}", ViewBag.VideoUnlike, "Unlikes") : string.Format("{0} {1}", ViewBag.VideoUnlike, "Unlike"))</span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-12 col-xs-12 col-sm-12 col-md-12 vid-sub-wrapper">
+                <div class="col-lg-10 col-xs-8 col-sm-8 col-md-10 vid-acc-det-wrapper">
+                    <div class="col-xs-12 col-sm-12 col-md-12 thumb-name-wrapper">
+                        <span class="acc-thumb-wrapper col-lg-1 col-xs-2 col-sm-2 col-md-2">
+                            @{
+
+                                var ChannelOwner = (from u in vidosaContext.Users
+                                                    where u.Id == Model.UserId
+                                                    select u).FirstOrDefault();
+                            }
+                            <img src="~/Images/@ChannelOwner.ProfilePic" class="media-object" />
+                        </span>
+                        <div class="acc-name-wrapper col-xs-10 col-sm-10 col-md-10">
+                            @{
+                                // ApplicationUser applicationUser = vidosaContext.Users.Where(u => u.Id == Model.UserId);
+                            }
+                            <h5>@ChannelOwner.FirstName @ChannelOwner.LastName</h5>
+                        </div>
+                    </div>
+                    <span class="count-subs col-xs-12">
+                        @string.Format("{0} {1}", ViewBag.CountSubscription, ViewBag.CountSubscription > 1 ? "Subscribers" : "Subscriber")
+                    </span>
+                </div>
+                <div class="col-lg-2 col-xs-4 col-sm-4 col-md-2 btn-subscribe-wrapper">
+                    <button class="btn btn-primary" type="button" data-channelId="@Model.UserId" id="btn-subscribe">@string.Format("{0}", ViewBag.IsSubscribed ? "UNSUBSCRIBE" : "SUBSCRIBE")</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 plyr-desc-column">
+            <div class="panel-group" id="accordion">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" data-parent="#accordion"
+                               href="#collapse">More Info On - <b>@Model.Title</b><span class="caret"></span></a>
+                        </h4>
+                    </div>
+                    <div id="collapse" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            @Html.Raw(HttpUtility.HtmlDecode(Model.VideoDetails))
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+}

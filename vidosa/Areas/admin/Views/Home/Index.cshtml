@@ -1,0 +1,173 @@
+﻿@model List<vidosa.Areas.admin.Models.Log>
+@using vidosa.Areas.admin.Models
+@using vidosa.Models
+
+@{
+    ViewBag.Title = "Index";
+    ApplicationUser applicationUser = null;
+    using (VidosaContext vidosaContext = new VidosaContext())
+    {
+        applicationUser = vidosaContext.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefault();
+    }
+}
+<style>
+    .edit-post {
+        border: 1px solid gray;
+        background-color: white;
+    }
+    td{
+        font-size: 11pt;
+    }
+    td a{
+        display: inline-block;
+    }
+    tfoot tr td a {
+        padding: 0 5px;
+        border: 1px solid mediumpurple;
+        border-radius: 3px;
+        font-size: 15px;
+    }
+</style>
+<h2>This is the Admin Home</h2>
+<a href="/account/editprofile" title="Edit Profile - @string.Format("{0} {1}", applicationUser.LastName, applicationUser.FirstName)">Edit Profile</a>
+<div class="row" id="post-seo-editor-con">    
+    <div class="col-lg-10">
+        @using (Ajax.BeginForm("GetPost",
+            new
+            {
+
+            },
+            new AjaxOptions()
+            {
+                HttpMethod = "POST",
+                InsertionMode = InsertionMode.Replace,
+                UpdateTargetId = "container",
+            },
+            new
+            {
+            }))
+        {
+            <div class="col-lg-3">
+                <div class="form-group formcontainer ui-widget">
+                    @Html.DropDownList("searchby",
+                        new SelectList(Enum.GetValues(typeof(SearchOptions))),
+                        "Search By",
+                        new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    @Html.DropDownList("selecttype", new SelectList(Enum.GetValues(typeof(Log.Type))),
+                    "Select Type",
+                    new { @class = "form-control" });
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="form-group formcontainer ui-widget">
+                    @Html.TextBox("searchvalue", null, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <input type="submit" value="Search" class="btn btn-default" />
+            </div>
+        }
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-10" id="">
+        <div class="col-lg-12">
+            <div class="table-responsive">
+                <table class="table edit-post">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>DateCreated</th>
+                            <th>LastUpdated</th>
+                            <th>Url</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-content-body">
+                        @for (int i = 0; i < Model.Count(); i++)
+                        {
+                            <tr>
+                                <td>@Model[i].Title</td>
+                                <td>@Model[i].DateCreated</td>
+                                <td>@Model[i].DateUpdated</td>
+                                <td>@Model[i].UrlId</td>
+                                <td>
+                                    <a class="btn btn-primary" href=@string.Format("{0}", Model[i].IsPost ? string.Format("/admin/home/getpost?purl={0}", Model[i].UrlId) : string.Format("/video/editpreview?v={0}", Model[i].UrlId)) 
+                                    data-ajax="true" data-ajax-success="nextLoaded" 
+                                    data-ajax-method="get" data-ajax-mode="replace"
+                                    data-ajax-update="#container" data-ajax-begin="beforeasyncCall">Edit</a> | 
+                                    <a class="btn btn-info" href=@string.Format("{0}", Model[i].IsPost ? string.Format("/blog/getpost?purl={0}", Model[i].UrlId) : string.Format("/video/player?v={0}", Model[i].UrlId)) data-ajax="true" data-ajax-begin="beforeasyncCall"
+   data-ajax-method="get" data-ajax-mode="replace" data-ajax-success="nextLoaded" data-ajax-update="#container" target="_blank">Preview</a> | <a class="btn btn-danger" href=@string.Format("{0}", Model[i].IsPost ? string.Format("/admin/Home/DeletePost?purl={0}&IsDeleted={1}", Model[i].UrlId, Model[i].IsDeleted ? false : true) : string.Format("/video/DeleteVideo?v={0}&IsDeleted={1}", Model[i].UrlId, Model[i].IsDeleted ? false : true)) title="Delete">@string.Format("{0}", Model[i].IsDeleted == true ? "UnDelete" : "Delete") </a>
+                                </td>
+                            </tr>
+       }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" style="text-align:center">
+                                @for (int i = 1; i <= ViewBag.totalNumberOfPages; i++)
+                                {
+                                    <a href=@string.Format("/admin/home/getnextpage?page={0}&bt={1}", i, 1) title=@string.Format("Page {0}", i) class="pager paging-anchors"
+                                       data-ajax="true" data-ajax-begin="beforeasyncCall"
+                                       data-ajax-method="get" data-ajax-mode="replace"
+                                       data-ajax-success="nextLoaded" data-ajax-update="#table-content-body">
+                                        @string.Format("{0}", i)
+                                    </a>                                    
+                                }
+                            </td>
+                        </tr>                        
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var selectType = document.getElementById("selecttype");
+        var changeBlogType = function (elem, e) {            
+            var pagingAnchors = document.getElementsByClassName("paging-anchors");
+            // console.log("NumberOfPages: " + pagingAnchors.length);
+
+            if (elem.options.selectedIndex > 0) {
+                for (var i = 0; i < pagingAnchors.length; i++) {
+                    var href = pagingAnchors[i].getAttribute("href");
+                    var variables = href.split('?')[1].split('&');
+
+                    for (var j = 0; j < variables.length; j++) {
+                        if (variables[j].split("=")[0] === "bt") {
+                            href = href.split("?")[0] + "?" + variables.find(function (v) {
+                                return v.split("=")[0] === "page";
+                            }) + "&bt=" + (elem.options.selectedIndex > 0 ? elem.options.selectedIndex : 1);
+                        }
+                        pagingAnchors[i].setAttribute("href", href);
+                        console.log("New href: " + pagingAnchors[i].getAttribute("href"));
+                    }
+                }
+
+                var request = new XMLHttpRequest();
+                request.open("GET", "/admin/home/getnextpage?page=1&bt=" + elem.options.selectedIndex);
+                // request.responseType = request.responseXML;
+                request.addEventListener("load", function (e) {
+                    if (this.status === 200) {
+                        var table = document.getElementById("table-content-body");
+                        // alert("Response " + request.response);
+                        table.innerHTML = "";
+                        table.innerHTML = request.response;
+                    }
+                });
+                request.send();
+            }
+        }
+
+        selectType.addEventListener("change", function (e) {
+            changeBlogType(e.target, e);
+        });
+        
+    })();
+</script>

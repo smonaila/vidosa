@@ -1,0 +1,27 @@
+﻿@model IEnumerable<vidosa.Models.Video>
+@using vidosa.Models;
+@{
+    List<Video> relatedVideos = Model.ToList();
+}
+
+@for (int i = 0; i < Model.Count(); i++)
+{
+    ViewsCounter viewsCounter = new ViewsCounter().GetViewsCounter(relatedVideos[i].VideoId);
+    <a class="col-lg-12 col-md-12 col-sm-12 col-xs-12 _rltd-vid-anchor" href=@string.Format("https://{0}:{1}/Video/Player?v={2}&ispartial=TRUE", Request.Url.Host, Request.Url.Port, relatedVideos[i].VideoId)
+       data-ajax="true"
+       data-ajax-method="GET" data-ajax-update="#container" data-ajax-success="nextLoaded"
+       data-ajax-mode="replace" data-ajax-begin="beforeasyncCall">
+        <div class="col-lg-4 col-md-5 col-sm-12 col-xs-5 _rltd-vid-thumb">
+            <span class="duration">@relatedVideos[i].Duration</span>
+            <img src="@relatedVideos[i].Thumb" class="thum-img" title="@relatedVideos[i].Title" />
+        </div>
+        <div class="col-lg-6 col-xs-6 col-sm-12 col-md-7 _rltd-vid-det">
+            <div class="col-lg-12 col-xs-12 col-sm-12 col-md-12 _rltd-vid-title"><h5>@relatedVideos[i].Title</h5></div>
+            <div class="col-lg-12 col-xs-12 col-sm-12 col-md-12 _rltd-vid-det-count">
+                <div class="col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-views-counter">@viewsCounter.Views <span class="glyphicon glyphicon-eye-open"></span></div>
+                <div class="col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-likes-counter">@viewsCounter.Likes <span class="glyphicon glyphicon-hand-up"></span></div>
+                <div class="col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-unlikes-counter">@viewsCounter.UnLikes <span class="glyphicon glyphicon-hand-down"></span></div>
+            </div>
+        </div>
+    </a>
+}

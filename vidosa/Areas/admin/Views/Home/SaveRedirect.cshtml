@@ -1,0 +1,23 @@
+﻿@model IEnumerable<vidosa.Models.Redirect>
+@using vidosa.Models;
+
+<tr>
+    <td colspan="4">
+        @Html.ValidationSummary()
+    </td>
+</tr>
+@foreach (Redirect redirect in Model)
+{
+    <tr>
+        <td>@redirect.Id</td>
+        <td>@redirect.UrlIdFrom</td>
+        <td>@redirect.UrlIdTo</td>
+        <td>
+            <a href=@string.Format("/admin/home/getpost?purl={0}", redirect.Id) data-ajax="true" data-ajax-success="loadSuccess"
+               data-ajax-method="get" data-ajax-mode="replace"
+               data-ajax-update="#container" data-ajax-begin="beforeasyncCall">Edit</a> |
+            <a href="@string.Format("/blog/deleteRedirect?purl={0}", redirect.Id)" data-ajax="true" data-ajax-begin="beforeasyncCall"
+               data-ajax-method="get" data-ajax-mode="replace" data-ajax-success="loadSuccess" data-ajax-update="#container" target="_blank">Delete</a>
+        </td>
+    </tr>
+}

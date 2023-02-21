@@ -1,0 +1,275 @@
+﻿@model vidosa.Models.Video
+@using vidosa.Models
+
+@{
+    ViewBag.Title = Model.Title;
+    ApplicationUser applicationUser = null;
+    Sales sales = null;
+    List<Comment> comments = (List<Comment>)ViewBag.Comments;
+}
+
+@Styles.Render("~/css/iframe/customs")
+
+<div class="row plyr-main-con">
+    <div class="col-lg-12 col-sm-12 col-xs-12 main-player-con">
+        <div class="col-lg-7 col-md-8 col-sm-8 col-xs-12 player-con" data-video-width="@ViewBag.VideoWidth" data-video-height="@ViewBag.VideoHeight" data-video-ar="@ViewBag.AspectRatio" id="player-metrics">
+            @{
+                using (VidosaContext vidosaContext = new VidosaContext())
+                {
+                    applicationUser = vidosaContext.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefault();
+                    sales = vidosaContext.Sales.Where(s => s.CustomerId == applicationUser.UserId
+                    && s.ProductId == Model.Id && s.IsPaid == true).FirstOrDefault();
+
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        if (!Model.IsFree)
+                        {
+                            if (sales is null)
+                            {
+                                if (!Model.IsSubscription)
+                                {
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 alert-column">
+                                            <div class="alert alert-info">
+                                                <p>
+                                                    <u><em>N:B</em></u> you are watching a preview of the  original video,
+                                                    click the Buy now button below to watch the full original video.
+                                                </p>
+                                                @if (Model.IsSubscription)
+                                                {
+                                                    <p>
+                                                        <span class="is-subscription">Available on Subscription: @ViewBag.CountSubscription Courses</span>
+                                                    </p>
+                                                }
+                                                <p><b>Price: R @Model.Price</b></p>
+                                                <p>
+
+                                                    <span>Payments are powered by: <img src="/Images/payfast-logo.jpg" title="Payfast Image"></span> <br>
+
+                                                    <a href="/finance/finance/OnceOffPayment?checkedoutvideos=TW7qQIhAWOsQ703IWXCDvVOmUsE4NpJoQGvltDb8" class="btn-buy-now" title="Buy this Course">Buy Now</a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    PremiumSubs premiumUser = vidosaContext.PremiumSubs.Where(pu => pu.Username.Equals(User.Identity.Name)).FirstOrDefault();
+                                    if (premiumUser is null)
+                                    {
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 alert-column">
+                                                <div class="alert alert-info">
+                                                    <p>
+                                                        <u><em>N:B</em></u> you are watching a preview of the  original video,
+                                                        click the Buy now button below to watch the full original video.
+                                                    </p>
+                                                    @if (Model.IsSubscription)
+                                                    {
+                                                        <p>
+                                                            <span class="is-subscription">Available on Subscription: @ViewBag.CountSubscription Courses</span>
+                                                        </p>
+                                                    }
+                                                    <p><b>Price: R @Model.Price</b></p>
+                                                    <p>
+
+                                                        <span>Payments are powered by: <img src="/Images/payfast-logo.jpg" title="Payfast Image"></span> <br>
+
+                                                        <a href="/finance/finance/OnceOffPayment?checkedoutvideos=TW7qQIhAWOsQ703IWXCDvVOmUsE4NpJoQGvltDb8" class="btn-buy-now" title="Buy this Course">Buy Now</a>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (!Utility.IsCrawlbot(Request))
+                    {
+                        <div class="frameCon-plchldr" id="frame-wrapper"></div>
+                    }
+                    else
+                    {
+                        // Load the text data of the video
+                    }
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        if (!Model.IsFree)
+                        {
+                            if (sales is null)
+                            {
+                                if (!Model.IsSubscription)
+                                {
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 alert-column">
+                                            <div class="alert alert-info">
+                                                <p>
+                                                    <u><em>N:B</em></u> you are watching a preview of the  original video,
+                                                    click the Buy now button below to watch the full original video.
+                                                </p>
+                                                @if (Model.IsSubscription)
+                                                {
+                                                    <p>
+                                                        <span class="is-subscription">Available on Subscription: @ViewBag.CountSubscription Courses</span>
+                                                    </p>
+                                                }
+                                                <p><b>Price: R @Model.Price</b></p>
+                                                <p>
+
+                                                    <span>Payments are powered by: <img src="/Images/payfast-logo.jpg" title="Payfast Image"></span> <br>
+
+                                                    <a href="/finance/finance/OnceOffPayment?checkedoutvideos=TW7qQIhAWOsQ703IWXCDvVOmUsE4NpJoQGvltDb8" class="btn-buy-now" title="Buy this Course">Buy Now</a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    PremiumSubs premiumUser = vidosaContext.PremiumSubs.Where(pu => pu.Username.Equals(User.Identity.Name)).FirstOrDefault();
+                                    if (premiumUser is null)
+                                    {
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 alert-column">
+                                                <div class="alert alert-info">
+                                                    <p>
+                                                        <u><em>N:B</em></u> you are watching a preview of the  original video,
+                                                        click the Buy now button below to watch the full original video.
+                                                    </p>
+                                                    @if (Model.IsSubscription)
+                                                    {
+                                                        <p>
+                                                            <span class="is-subscription">Available on Subscription: @ViewBag.CountSubscription Courses</span>
+                                                        </p>
+                                                    }
+                                                    <p><b>Price: R @Model.Price</b></p>
+                                                    <p>
+
+                                                        <span>Payments are powered by: <img src="/Images/payfast-logo.jpg" title="Payfast Image"></span> <br>
+
+                                                        <a href="/finance/finance/OnceOffPayment?checkedoutvideos=TW7qQIhAWOsQ703IWXCDvVOmUsE4NpJoQGvltDb8" class="btn-buy-now" title="Buy this Course">Buy Now</a>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                        <div class="row vid-info-wrap" id="videodesc-wrapper">
+                            <div class="col-lg-12 col-xs-12 views-likes-subs-wrapper">
+                                <div class="col-lg-12 col-xs-12 vid-reaction-main-wrapper">
+                                    <div class="col-lg-2 col-xs-4 vid-rctn-views-wrapper">
+                                        <span class="view-counter-wrap view-counter-wrap-plchldre"></span>
+                                    </div>
+                                    <div class="col-lg-2 col-xs-4 col-lg-offset-6 vid-rctn-likes-wrapper">
+                                        <span class="vd-like vd-like-plchldr"></span>
+                                    </div>
+                                    <div class="col-lg-2 col-xs-4 vid-rctn-unlikes-wrapper-plchldr vid-rctn-unlikes-wrapper">
+                                        <span class="vd-unlike vd-unlike-plchldr"></span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12 col-xs-12 col-sm-12 col-md-12 vid-sub-wrapper">
+                                    <div class="col-lg-10 col-xs-8 col-sm-8 col-md-10 vid-acc-det-wrapper">
+                                        <div class="col-xs-12 col-sm-12 col-md-12 thumb-name-wrapper">
+                                            <span class="acc-thumb-wrapper col-lg-1 col-xs-2 col-sm-2 col-md-2 acc-thumb-wrapper-plchldr">
+                                                <img class="media-object viddesc-media-object-plchldr" />
+                                            </span>
+                                            <div class="acc-name-wrapper col-xs-10 col-sm-10 col-md-10"></div>
+                                        </div>
+                                        <span class="count-subs col-xs-12 count-subs-plchldr"></span>
+                                    </div>
+                                    <div class="col-lg-2 col-xs-4 col-sm-4 col-md-2 btn-subscribe-wrapper btn-subscribe-wrapper-plchldr"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            }
+            @if (sales is null)
+            {
+                if (!Model.IsSubscription)
+                {
+                    <span>Buy a full course: </span> <a href="/finance/finance/OnceOffPayment?checkedoutvideos=@Model.VideoId" class="btn-buy-now" title="Buy this Course">Buy Now</a>
+                }
+                else
+                {
+                    using (VidosaContext vidosaContext = new VidosaContext())
+                    {
+                        if (!vidosaContext.PremiumSubs.ToList().Exists(u => u.Username == User.Identity.Name))
+                        {
+                            <span>Buy a full course: </span> <a href="/finance/finance/OnceOffPayment?checkedoutvideos=@Model.VideoId" class="btn-buy-now" title="Buy this Course">Buy Now</a>
+                        }
+                    }
+                }
+            }
+        </div>
+        <div class="col-lg-5 col-xs-12 col-md-4 col-sm-4 main-related-vid-con">
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#rltd-vid">Related Video</a></li>
+                <li><a data-toggle="tab" href="#comments">Comments</a></li>
+            </ul>
+            <div class="tab-content col-lg-12 col-lg-offset-1 col-sm-12 col-xs-12 related-videos-con">
+                <div id="rltd-vid" class="tab-pane fade in active">
+                    <div class="col-lg-12 col-xs-12 col-sm-12 col-md-12 rltd-vid-wrapper" id="id_rltd-vid-wrapper">
+                        @for (int i = 0; i < 10; i++)
+                        {
+                            <a class="rltd-vid-lnk-plchldr col-lg-12 col-md-12 col-sm-12 col-xs-12 _rltd-vid-anchor">
+                                <div class="rltd-vid-thumb-plchldr col-lg-4 col-md-5 col-sm-12 col-xs-5 _rltd-vid-thumb">
+                                    <span class="duration-plchldr duration"></span>
+                                    <img class="thumb-plchldr thum-img" />
+                                </div>
+                                <div class="rltd-vid-det-plchldr col-lg-6 col-xs-6 col-sm-12 col-md-7 _rltd-vid-det">
+                                    <div class="rltd-vid-title-plchldr col-lg-12 col-xs-12 col-sm-12 col-md-12 _rltd-vid-title"><h5> </h5></div>
+                                    <div class="rltd-vid-det-count-plchldr col-lg-12 col-xs-12 col-sm-12 col-md-12 _rltd-vid-det-count">
+                                        <div class="rltd-views-counter-plchldr col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-views-counter"> <span class="glyphicon glyphicon-eye-open"></span></div>
+                                        <div class="rltd-likes-counter-plchldr col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-likes-counter"><span class="glyphicon glyphicon-hand-up"></span></div>
+                                        <div class="rltd-unlikes-counter-plchldr col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-unlikes-counter"><span class="glyphicon glyphicon-hand-down"></span></div>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div id="comments" class="tab-pane fade" data-comnts-type="1" data-cmnts-key="@Model.VideoId">
+                    @for (int i = 0; i < 10; i++)
+                    {
+                        <a class="rltd-vid-lnk-plchldr col-lg-12 col-md-12 col-sm-12 col-xs-12 _rltd-vid-anchor">
+                            <div class="rltd-vid-thumb-plchldr col-lg-4 col-md-5 col-sm-12 col-xs-5 _rltd-vid-thumb">
+                                <span class="duration-plchldr duration"></span>
+                                <img class="thumb-plchldr thum-img" />
+                            </div>
+                            <div class="rltd-vid-det-plchldr col-lg-6 col-xs-6 col-sm-12 col-md-7 _rltd-vid-det">
+                                <div class="rltd-vid-title-plchldr col-lg-12 col-xs-12 col-sm-12 col-md-12 _rltd-vid-title"><h5> </h5></div>
+                                <div class="rltd-vid-det-count-plchldr col-lg-12 col-xs-12 col-sm-12 col-md-12 _rltd-vid-det-count">
+                                    <div class="rltd-views-counter-plchldr col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-views-counter"> <span class="glyphicon glyphicon-eye-open"></span></div>
+                                    <div class="rltd-likes-counter-plchldr col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-likes-counter"><span class="glyphicon glyphicon-hand-up"></span></div>
+                                    <div class="rltd-unlikes-counter-plchldr col-lg-4 col-xs-4 col-sm-4 col-md-4 _rltd-unlikes-counter"><span class="glyphicon glyphicon-hand-down"></span></div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" value="@Model.VideoId" id="videoId" />
+@if (ViewBag.IsAjax)
+{
+    <input type="hidden" value="@ViewBag.Url" id="ajaxurl" />
+}
+
+<script>
+    (function () {
+        window.addEventListener("load", function (e) {
+            var videoId = document.getElementById("videoId").value;
+            window.getPlayer(videoId);
+        });
+    })();
+</script>

@@ -1,0 +1,189 @@
+﻿@model vidosa.Models.Subject
+@using vidosa.Models;
+@{
+    List<Subject> Subjects = ViewBag.Subjects;
+}
+@using (Ajax.BeginForm("CreateSubject", new
+{
+    ispartial = true
+}, new AjaxOptions()
+{
+    HttpMethod = "post",
+    UpdateTargetId = "subject-list-table",
+    InsertionMode = InsertionMode.Replace
+},
+            new
+            {
+                id = "addsubject-form"
+            }))
+{
+    <div class="form-horizontal">
+        <h4>Subject</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.SubjectId, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.SubjectId, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.SubjectId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", id = "name", name = "name" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control", id = "description", name = "description" } })
+                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+    
+    <table class="table">
+        <tr>
+            <th>Id</th>
+            <th>SubjectId</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Add/Remove Chapters/Delete Subject</th>
+        </tr>
+        <tbody id="subject-list-table">
+            @for (int i = 0; i < Subjects.Count; i++)
+            {
+                <tr>
+                    <td>@Subjects[i].Id</td>
+                    <td>@Subjects[i].SubjectId</td>
+                    <td>@Subjects[i].Name</td>
+                    <td>@Subjects[i].Description</td>
+                    <td><a role="button" class="btn btn-primary add-remove-chprs" data-btn-id="btn-add" data-subjectId="@Subjects[i].SubjectId" title="Add Chapters" id="btn-add-chapters">Add</a>|<a role="button" class="add-remove-chprs btn btn-info" data-btn-id="btn-remove" data-subjectId="@Subjects[i].SubjectId">Remove</a>|<a role="button" class="btn btn-danger" id="btn-delete-subject">Delete</a></td>
+                </tr>
+            }
+        </tbody>        
+    </table>
+}
+    <div class="modal fade" id="add-remove-chapters">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4>Add/Remove Chapters</h4>
+                </div>
+                <div class="modal-body" id="add-remove-chapters-body">
+
+                </div>
+                <div class="modal-footer">
+                    <a role="button" class="btn btn-primary" id="save-chapters" data-action-type="add">Save</a>
+                </div>
+            </div>
+        </div>
+    </div>
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var subjectId;
+        var actionType;
+
+        var checkboxList = function () {
+            var checkboxes = $("#add-remove-chapters-body").find("input[type='checkbox']");
+            for (var i = 0; i < checkboxes.length; i++) {
+                if ($(checkboxes[i]).prop("checked") === true) {
+                    $(checkboxes[i]).attr("value", "true");
+                } else {
+                    $(checkboxes[i]).attr("value", "false");
+                }
+            };
+            return checkboxes;
+        }        
+
+        //$(".add-remove-chprs").click(function (e) {
+        //    if ($(e.target).attr("id")) {
+
+        //    }
+        //});
+
+        $("[data-btn-id='btn-add']").click(function (e) {
+            subjectId = $(e.target).attr("data-subjectId"); 
+            $("#save-chapters").attr("data-action-type", "add");
+           var add_chapters = $.ajax({
+               url: "/admin/Home/getchapters?subjectId=" + subjectId,
+            })
+            add_chapters.done(function (chapters) {
+                $("#add-remove-chapters-body").html("");
+                $("#add-remove-chapters-body").html($(chapters));
+            })
+            $("#add-remove-chapters").modal("show");            
+        })
+
+        $("[data-btn-id='btn-remove']").click(function (e) {
+            subjectId = $(e.target).attr("data-subjectId");
+            $("#save-chapters").attr("data-action-type", "remove");
+            var remove_chapters = $.ajax({
+                url: "/admin/home/chapterstoremove?subjectId=" + subjectId
+            });
+            remove_chapters.done(function (posts) {
+                $("#add-remove-chapters-body").html("");
+                $("#add-remove-chapters-body").html($(posts));
+            });
+            $("#add-remove-chapters").modal("show");
+        });
+
+        $("#save-chapters").click(function (e) {
+            let check_boxes = checkboxList();
+            let formSerialize = "";
+            for (var i = 0; i < check_boxes.length; i++) {
+                if ($(check_boxes[i]).prop("checked") === true) {
+                    formSerialize += i <= check_boxes.length - 1 ? $(check_boxes[i]).attr("data-postKey") + ";" : $(check_boxes[i]).attr("data-postKey");
+                }
+            }
+            formSerialize = formSerialize.substring(0, formSerialize.lastIndexOf(";"));
+
+            if ($(e.target).attr("data-action-type") === "add") {
+                var save_chapters = $.ajax({
+                    url: "/admin/Home/addchapters?subjectId=" + subjectId + "&scs=" + formSerialize
+                })
+                save_chapters.done(function (chaptersToAdd) {
+                    $("#add-remove-chapters-body").html("");
+                    $("#add-remove-chapters-body").html($(chaptersToAdd));
+                })
+            } else {
+                var remove_chapters = $.ajax({
+                    url: "/admin/Home/RemoveChapters?subjectId=" + subjectId + "&scs=" + formSerialize
+                })
+                remove_chapters.done(function (chaptersToRemove) {
+                    $("#add-remove-chapters-body").html("");
+                    $("#add-remove-chapters-body").html($(chaptersToRemove));
+                })
+            }           
+        });
+
+        $("#btn-remove-chapter").click(function () {
+            let check_boxes = checkboxList();
+            let formSerialize = "";
+            for (var i = 0; i < check_boxes.length; i++) {
+                if ($(check_boxes[i]).prop("checked") === true) {
+                    formSerialize += i <= check_boxes.length - 1 ? $(check_boxes[i]).attr("data-postKey") + ";" : $(check_boxes[i]).attr("data-postKey");
+                }
+            }
+            formSerialize = formSerialize.substring(0, formSerialize.lastIndexOf(";"));
+            var remove_chapters = $.ajax({
+                url: "/admin/home/ChaptersToRemove?subjectId=" + subjectId + "&scs=" + formSerialize,
+            })
+            remove_chapters.done(function () {
+                
+            })
+        });        
+    })
+</script>

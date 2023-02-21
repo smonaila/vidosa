@@ -1,0 +1,435 @@
+﻿@model vidosa.Areas.admin.Models.PostSEOView
+@using vidosa.Areas.admin.Models
+@using vidosa.Models
+@{
+    List<RelatedPosts> RelatedPosts = (List<RelatedPosts>)ViewBag.RelatedPosts;
+    List<Post> Posts = (List<Post>)ViewBag.Posts;
+    List<RelatedPosts> RelatedVideos = (List<RelatedPosts>)ViewBag.RelatedVideos;
+    List<Video> Videos = (List<Video>)ViewBag.Videos;
+    List<ApplicationUser> Authors = (List<ApplicationUser>)ViewBag.Authors;
+    var PostInf = ViewBag.PostInf;
+}
+<script>
+    (function () {
+        let formCheckboxes = function () {
+            var checkboxes = $("#select-url-form").find("input[type='checkbox']");
+            for (var i = 0; i < checkboxes.length; i++) {
+                if ($(checkboxes[i]).prop("checked") === true) {
+                    $(checkboxes[i]).attr("value", "true");
+                } else {
+                    $(checkboxes[i]).attr("value", "false");
+                }
+            };
+            return checkboxes;
+        }
+
+        let radioCheck = function (event) {
+            let radiobtns = $("#post-list-container").find("input[type='radio']");
+
+            $("#anchor-tag-url").attr("value", $(event.target).attr("data-url"));
+            $("#anchor-title").attr("value", $(event.target).attr("data-url-title"));
+
+            for (var i = 0; i < radiobtns.length; i++) {
+                $(radiobtns[i]).prop("checked", false);            
+            }
+
+            $(event.target).prop("checked", true);
+        }
+
+        $("#search-current-user-post").autocomplete({
+            response: function (event, ui) {
+                window.response(event, ui);
+            },
+            source: function (request, response) {
+                // auto complete what the user is typing.
+                var req, input = $("#select-url-form").find("input[type='text']");
+
+                let formUrl = "";
+                let checkboxes = formCheckboxes();
+                for (var i = 0; i < checkboxes.length; i++) {
+                    formUrl += i === 0 ? '"' + $(checkboxes[i]).attr("name") + '="' + $(checkboxes[i]).attr("value") : '"&' + $(checkboxes[i]).attr("name") + '="' + $(checkboxes[i]).attr("value");
+                }
+                formUrl = formUrl + "&select-url-form=" + $(input).val();
+
+                req = $.ajax({
+                    url: "/Video/Search?" + formUrl + "&ispartial=true",
+                });
+                req.done(function (xhr) {
+                    // alert(JSON.stringify(xhr));
+                    response(xhr);
+
+                    // Search for video and return an html page with those videos
+                    if (($(input).val().split(" ")).length > 3) {
+                        // Make sure that the playing streamming is cancelled if it is neccessary.
+                        if (reqObj.data.isplaying) {
+                            beforeasyncCall();
+                        }
+                        window.formCheckboxes($(form));
+                    }
+                });
+                req.fail(function (xhr) {
+
+                });
+
+                var searched_vid_req = $.ajax({
+                    url: "/blog/GetUserPost?searchTerm=" + $(input).val() + formUrl + "&ispartial=true",
+                });
+                searched_vid_req.done(function (postData) {
+                    $("#post-list-container").html("");
+                    for (var i = 0; i < postData.length; i++) {
+                        let radioCon = document.createElement("div");
+                        let titleCon = document.createElement("div");
+                        let previewCon = document.createElement("div");
+
+                        let row = document.createElement("div");
+                        $(row).addClass("row");
+
+                        $(radioCon).addClass("col-lg-1");
+                        $(titleCon).addClass("col-lg-9");
+                        $(previewCon).addClass("col-lg-2");
+
+                        let radio = document.createElement("input");
+                        $(radio).attr("type", "radio");
+
+                        let anchor = document.createElement("a");
+                        let title = document.createElement("h4");
+
+                        $(title).append(postData[i].Title);
+                        $(anchor).attr("title", postData[i].Title);
+                        $(anchor).attr("href", postData[i].Type === "blog" ? "/blog/getpost?purl=" + postData[i].UrlId : "/video/player?v=" + postData[i].UrlId);
+                        $(anchor).attr("data-ajax", true);
+                        $(anchor).attr("data-ajax-success", "loadSuccess");
+                        $(anchor).attr("data-ajax-mode", "replace");
+                        $(anchor).attr("data-ajax-method", "get");
+                        $(anchor).attr("data-ajax-update", "#post-list-container");
+                        $(anchor).attr("data-ajax-begin", "beforeasyncCall");
+
+                        $(anchor).append("Preview");
+
+                        $(radio).on("click", function (event) {
+                            radioCheck(event);
+                        });
+                        $(radio).attr("data-url", postData[i].Type === "blog" ? "/blog/getpost?purl=" + postData[i].UrlId : "/video/player?v=" + postData[i].UrlId);
+                        $(radio).attr("data-url-title", postData[i].Title);
+                        $(radioCon).append($(radio));
+                        $(titleCon).append($(title));
+                        $(previewCon).append($(anchor));
+                        $(row).append($(radioCon), $(titleCon), $(previewCon));
+                        $("#post-list-container").append($(row));
+                    }
+                })
+            },
+            select: function (event, ui) {
+
+            },
+            open: function (event, ui) {
+                var items = $(".ui-front").find(".ui-menu-item");
+            },
+            _renderMenu: function (ul, items) {
+                // alert("Rendering Menu");
+            },
+        }).autocomplete("instance")._renderItem = function (ul, item) {
+            return window.renderItems(ul, item);
+        };
+    })()
+</script>
+<div class="row">
+    <div class="col-lg-12">
+        @using (Ajax.BeginForm("GetPost",
+        new
+        {
+
+        },
+        new AjaxOptions()
+        {
+            HttpMethod = "POST",
+            InsertionMode = InsertionMode.Replace,
+            UpdateTargetId = "container",
+        },
+        new
+        {
+        }))
+        {
+            <div class="col-lg-3 col-lg-offset-2">
+                <div class="form-group formcontainer ui-widget">
+                    @Html.DropDownList("searchby",
+                        new SelectList(Enum.GetValues(typeof(SearchOptions))),
+                        "Search By",
+                        new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-lg-6 col-lg-offset-2">
+                <div class="form-group formcontainer ui-widget">
+                    @Html.TextBox("searchvalue", null, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <input type="submit" value="Search" class="btn btn-default" />
+            </div>
+        }
+    </div>
+</div>
+
+<h4>Edit - @Model.Title</h4>
+<hr style="background-color:blue;height:5px" />
+<div class="row">    
+    <div class="col-lg-8">
+        @using (Ajax.BeginForm("SaveSEO",
+                         new
+                         {
+                             ispartial = true
+                         }, new AjaxOptions()
+                         {
+                             HttpMethod = "post",
+                             UpdateTargetId = "container",
+                             InsertionMode = InsertionMode.Replace
+                         },
+                         new
+                         {
+                            id="saveseo-form"
+                         }))
+        {
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="col-lg-12">
+                <div class="col-lg-3">
+                    @Html.LabelFor(model => model.Id, htmlAttributes: new { @class = "control-label col-md-2" })
+                </div>
+                <div class="col-md-9">
+                    @Html.EditorFor(model => model.Id, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="col-lg-3">
+                    @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+                </div>
+                <div class="col-md-9">
+                    @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="col-lg-3">
+                    @Html.LabelFor(model => model.Blurb, htmlAttributes: new { @class = "control-label col-md-2" })
+                </div>
+                <div class="col-md-9">
+                    @Html.EditorFor(model => model.Blurb, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Blurb, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="col-lg-3">
+                    @Html.LabelFor(model => model.Keywords, htmlAttributes: new { @class = "control-label col-md-2" })
+                </div>
+                <div class="col-md-9">
+                    @Html.EditorFor(model => model.Keywords, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="col-lg-3">
+                    @Html.LabelFor(model => model.HtmlCode, htmlAttributes: new { @class = "control-label col-md-2" })
+                </div>
+                <div class="col-md-9">
+                    <div class="modal fade" id="insert-anchor-tag-url">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                    <h4 class="modal-title">Insert Url</h4>
+                                </div>
+                                <div class="modal-body" id="insert-url-modal-body">
+                                    <div class="dropdown show" style="margin-bottom:2%">
+                                        <button class="btn btn-primary dropdown-toggle" role="button" id="current-user-post" data-toggle="dropdown" 
+                                        aria-haspopup="true" aria-expanded="false">
+                                            Select Post <span class="glyphicon glyphicon-chevron-down"></span>
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="current-user-post" onload="formtest()">
+                                            <div class="col-lg-12" id="test">
+                                                <div class="form-group has-feedback" id="select-url-form">
+                                                    <input type="text" class="form-control" id="search-current-user-post" style="width: 100%;" placeholder="Search" />
+                                                    <div class="custom-dropdown-menu">
+                                                        <fieldset title="Search Option">
+                                                            <div class="checkbox">
+                                                                <label><input type="checkbox" value="checked" name="select_url_all" checked> All</label>
+                                                            </div>
+                                                            <div class="checkbox">
+                                                                <label><input type="checkbox" value="checked" name="select_url_blog_posts" checked> Blog Posts</label>
+                                                            </div>
+                                                            <div class="checkbox">
+                                                                <label><input type="checkbox" value="checked" name="select_url_videos" checked> Video</label>
+                                                            </div>
+                                                        </fieldset>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12" id="post-list-container">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="insert-url-txt form-group">                                        
+                                        <input type="text" name="anchor-tag-url" class="form-control" id="anchor-tag-url"  placeholder="Enter Url or Select"/>
+                                    </div>
+                                    <div class="insert-title-txt form-group">                                        
+                                        <input type="text" name="anchor-title" class="form-control" id="anchor-title" placeholder="Title"/>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" onclick="insertAnchor()">Insert</button>
+                                    <button type="button" class="btn btn-default" onabort="removeAnchor()">Cancel</button>
+                                </div>
+                            </div>
+                        </div>                        
+                    </div>
+                    <figure>
+                        <figcaption>
+                            <div class="dropdown show">
+                                <button class="btn btn-primary dropdown-toggle" role="button" id="insert-url-img" data-toggle="dropdown"
+                                        aria-haspopup="true" aria-expanded="false">
+                                    Insert <span class="glyphicon glyphicon-chevron-down"></span>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="insert-url-img">
+                                    <ul>
+                                        <li><a href="#" onclick="showInsertUrlModal()" role="button" class="insert-anchor"><span class="glyphicon glyphicon-link"></span> Insert link</a></li>
+                                        <li><a href="#" onclick="showInsertImgModal()" role="button" class="insert-img"><span class="glyphicon glyphicon-picture"></span> Image</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </figcaption>
+                        @Html.TextAreaFor(model => model.HtmlCode, new { @class = "", cols = 130, rows = 15 })
+                        @Html.ValidationMessageFor(model => model.HtmlCode, "", new { @class = "text-danger" })
+                    </figure>                    
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="col-lg-offset-3 col-lg-2">
+                    <input type="submit"
+                           value="Save"
+                           class="btn btn-primary" />
+                </div>
+            </div>
+        }
+    </div>
+    <div class="author-info-wrapper col-lg-4">
+        @foreach (var auth in Authors)
+        {
+            <div class="author-names">
+                <div class="first-name">
+                    <span class="first-name-label">FirstName:</span>
+                    <span class="author-firstname">@auth.FirstName</span>
+                </div>
+                <div class="last-name">
+                    <span class="last-name-label">LastName:</span>
+                    <span class="author-lastname">@auth.LastName</span>
+                </div>
+            </div>
+            <div class="post-date-info-wrapper">
+                <span class="post-creation-label">Date Created:</span>
+                @*<span class="post-creation-date">@PostInf.DateCreated</span>*@
+                <span class="post-updates-label">Last Updated:</span>
+                @*<span class="post-last-update-date">@PostInf.LastUpdated</span>*@
+            </div>
+        }
+    </div>
+
+    <div class="edt-authors col-lg-4">
+
+    </div>
+
+    <div class="col-lg-4 panel-group" id="pst-pub-rltd-content">
+        <div class="panel">
+            <h2 class="panel-heading">
+                <a data-toggle="collapse" data-parent="#accordion" href="#related-post">
+                    Related Posts
+                </a>
+            </h2>
+            <div id="related-post" class="panel-collapse collapse">
+                <form role="form" action=@string.Format("/admin/home/saverelatedposts?pid={0}&ispost=true", Model.Id) data-ajax="true" data-ajax-method="post" data-ajax-mode="replace" data-ajax-update="#container" id="rltd-pst-form" method="post">
+                    <div class="panel-body">
+                        <ul>
+                            @foreach (Post post in Posts)
+                            {
+                                <li>
+                                    @if (RelatedPosts.Exists(p => p.Key == post.PostKey))
+                                    {
+                                        <input type="checkbox" checked name="@post.PostKey" /> @post.Title
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" name="@post.PostKey" /> @post.Title
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        <input type="submit" class="btn btn-primary" value="Save" />
+                        <span class="rltd-pst-saved" id="rltd-pst-saved">Successfully Saved</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel">
+            <h2 class="panel-heading">
+                <a data-toggle="collapse" data-parent="#accordion" href="#related-video">
+                    Related Video
+                </a>
+            </h2>
+            <div id="related-video" class="panel-collapse collapse">
+                <form role="form" action=@string.Format("/admin/home/saverelatedposts?pid={0}&ispost=false", Model.Id) data-ajax="true" data-ajax-method="post" data-ajax-mode="replace" data-ajax-update="#container" id="rltd-pst-form" method="post">
+                    <div class="panel-body">
+                        <ul>
+                            @foreach (Video video in Videos)
+                            {
+                                <li>
+                                    @if (RelatedVideos.Exists(v => v.Key == video.VideoId))
+                                    {
+                                        <div class="col-lg-1">
+                                            <input type="checkbox" checked name="@video.VideoId" />
+                                        </div>
+                                        <a href="~/video/player?v=@video.VideoId" data-ajax="true" data-ajax-method="post" data-ajax-mode="replace" data-ajax-update="#container">
+                                            <div class="col-lg-11">
+                                                <div class="col-lg-3">
+                                                    <img src="@video.Thumb" title="@video.Title" alt="@video.Title" />
+                                                </div>
+                                                <div class="col-lg-9">
+                                                    <h6>@video.Title</h6>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-lg-1">
+                                            <input type="checkbox" name="@video.VideoId" />
+                                        </div>
+                                        <a href="~/video/player?v=@video.VideoId" data-ajax="true" data-ajax-method="post" data-ajax-mode="replace" data-ajax-update="#container">
+                                            <div class="col-lg-11">
+                                                <div class="col-lg-3">
+                                                    <img src="@video.Thumb" title="@video.Title" alt="@video.Title" />
+                                                </div>
+                                                <div class="col-lg-9">
+                                                    <h6>@video.Title</h6>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        <input type="submit" class="btn btn-primary" value="Save" />
+                        <span class="rltd-vid-saved" id="rltd-pst-saved">Successfully Saved</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+

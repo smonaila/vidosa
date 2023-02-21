@@ -1,0 +1,237 @@
+﻿@model vidosa.Models.Video
+@using vidosa.Models
+@{
+    ViewBag.Title = "Player";
+
+}
+
+@Styles.Render("~/Content/css")
+@Scripts.Render("~/bundles/modernizr")
+@Styles.Render("~/css/iframe/customs")
+
+<style>
+	html {
+		overflow: unset;
+		overflow-y: hidden;
+	}
+    #debugging{
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        z-index: 1000;
+    }
+</style>
+
+<span id="debugging"></span>
+
+<div class="row ply-parent-con" style="margin-right:0;margin-left:0">
+    <div class="row video-con">
+        <div class="vid-qulty-popup">
+            <!-- Qualities -->
+            @using (VidosaContext Context = new VidosaContext())
+            {
+                if (User.Identity.IsAuthenticated)
+                {
+                    if (Context.PremiumSubs.ToList().Exists(pu => pu.Username == User.Identity.Name))
+                    {
+                        <span id="closequalities" value="close">close</span>
+                        foreach (BandWidth bandWidth in Context.BandWidths)
+                        {
+                            <span id="@bandWidth.Name" class="bandwidth" value="@bandWidth.Value">@bandWidth.Name</span>
+                        }
+                    }
+                    else
+                    {
+                        <span id="360p" class="bandwidth" value="360p">360p</span>
+                    }
+                }
+            }
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-left:0;padding-right:0;" id="videlemcon">
+            <div class="cnter-play-wrapper">
+                <span class="glyphicon glyphicon-play"></span>
+            </div>
+            <img src="~/Images/loading.gif" style="width:10%;position:absolute;display:block" class="loading-img" />
+            <div class="ad-timer col-xs-4">
+                <div class="col-sm-2 col-xs-5 ad-notification-img-con">
+                    <img class="vid-thumb" title="@Model.Title" src="@Model.Thumb" />
+                </div>
+                <div class="timer col-xs-4">Skip Ad in 22s</div>
+            </div>
+            <a class="ad-skip">Skip an Ad<span class="glyphicon glyphicon-fast-forward"></span></a>
+            <video id="vidplayer" autoplay="autoplay" title="@Model.Title">
+                <track kind="captions" src="~/subtitlevtt.vtt" srclang="en" label="English" default/>                 
+            </video>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 dspl-seeking-pos-wrap">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <img src="~/videos/thumbs/ZyPB5QnZZaL7NFRe4rwhjrI7gkrW511kshX3c7mhiRaLW3mho6sSiD9nSvq04ptLta4X0dJLv7C71OZxNXQ.png" />
+            </div>
+            <span class="col-lg-12 col-md-12 col-sm-12 col-xs-12 dsply-seeking-time"></span>
+        </div>
+        <div class="navbar navbar-fixed-bottom ad-cntrls">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 prb-cntrl-con">
+                    <div class="row">
+                        <div class="ad-progress-tape"></div>
+                        <div class="ad-progress-buffered"></div>
+                        <div class="ad-custom-progress" style="height:6px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 2%;margin-left: 2%;">
+                <span class="ad-timers-progress" style="color: white;">Ad 1 of 2</span>
+            </div>
+        </div>
+
+        <div class="navbar navbar-fixed-bottom ctrls-main-con">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 prb-cntrl-con">
+                    <div class="row">
+                        <div class="progress-tape"></div>
+                        <div class="progress-buffered"></div>
+                        <div class="seeking-bar-tape"></div>
+                        <div class="custom-progress"></div>
+                        <div class="curnt-time-marker"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row cnt-con" id="ctrls-con">
+                    <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 btn-ply-wrapper">
+                        <div class="btn btn-sm pause-play-wrap">
+                            <span class="glyphicon glyphicon-play btn-play" id="btn-play"></span>
+                            <span class="glyphicon glyphicon-pause btn-pause" id="btn-pause"></span>
+                            <span class="glyphicon glyphicon-repeat btn-repeat" id="btn-repeat"></span>
+                        </div>
+                    </div>
+                    <div class="col-lg-9 col-md-9 col-sm-5 col-xs-4">
+                        <span class="timeduration"></span>
+                    </div>
+                    @*
+
+                <div class="col-xs-2 col-xs-offset-2 btn-fullscreen-wrap">
+                    <div class="btn btn-sm btn-full-screen">
+                        <span class="glyphicon glyphicon-fullscreen"></span>
+                    </div>
+                </div>
+                <div class="col-lg-1 col-md-1 col-sm-1 col-xs-2 btn-qualities">
+                    <!--  -->
+                    <div class="btn-group dropup btn-sel-quality">
+                        <div class="btn btn-sm">
+                            <span class="quality-asterick glyphicon glyphicon-asterisk"
+                                  data-target="#qualities"></span>
+                        </div>
+
+                        @*<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Dropup
+                        </button>
+                </div>
+            </div>*@
+            <div class="collapse" id="qualities"></div>
+        </div>
+            </div>
+        </div>
+    </div>
+    <div class="rltd-vid-ended col-xs-12" id="rltd-vid-ended">
+        <div class="video-ended-controls-main-wrapper" id="videndedcontrolswrapper">
+            <div class="col-xs-12 video-ended-btn-repeat-wrapper">
+                <a href="#" id="repeatanchor">
+                    <span class="glyphicon glyphicon-repeat btn-repeat-center"></span>
+                </a>                
+            </div>
+            <div class="col-xs-12 video-ended-btn-step-forward-wrapper">
+                <a class="btn btn-primary btn-step-forward">
+                    Play Next <span class="glyphicon glyphicon-step-forward"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" value="@Model.VideoId" id="videoId" title="@Model.Title" />
+<input type="hidden" value="HD" id="bandwidth" />
+<input type="hidden" value="@Model.Description" id="descvalue" />
+
+@Scripts.Render("~/scripts/iframe/customs")
+
+<script>
+    (function() {
+        window.addEventListener("load", function (e) {
+            var videoId = document.getElementById("videoId").getAttribute("value");
+            var parentWindow = window.parent;
+            var pause = false;
+
+            // var videoId = document.getElementById("videoId").value;
+
+            parentWindow.sizeFrame();
+            // parentWindow.getPlayer(videoId);
+
+            class StreamStatus {
+                static Started = new StreamStatus("Started");
+                static Running = new StreamStatus("Running");
+                static Paused = new StreamStatus("Paused");
+                static Ended = new StreamStatus("Ended");
+                static Waiting = new StreamStatus("Waiting");
+
+                static Status = this.Waiting;
+
+                constructor(statusName) {
+                    this.name = statusName;
+                }
+            } 
+
+            // let StreamStatus = Started;
+
+            // Initialize the frame holding the video.
+            // let currentVidInfo = parentWindow.frameInit();
+
+            // console.log("Duration of the main video = " + mvideo.duration);
+            // var startStreaming = function () {
+            //    var req_stream = $.ajax({
+            //        url: "/video/startstreaming?videoId=" + videoId + "&frameId=" + currentVidInfo.frameId + "&cid=" + currentVidInfo.connectionId + "&streamId=" + parentWindow.getStreamId() + "&pause=" + pause,
+            //    });
+            //    req_stream.fail(function (e) {
+            //        alert("Request Streaming Failed! " + req_stream.responseXML);
+            //    });
+            //    req_stream.done(function (status) {
+            //        StreamStatus = status;
+            //        switch (StreamStatus) {
+            //            case StreamStus.Started:
+            //                console.log("Streaming requested");
+            //                break;
+            //            case StreamStus.Running:
+            //                console.log("Streaming is running");
+            //                break;
+            //            case StreamStus.Paused:
+            //                console.log("Streaming has been paused");
+            //                break;
+            //            case StreamStus.Ended:
+            //                console.log("Streaming has been paused");
+            //                break;
+            //            default:
+            //        }
+
+            //        // var _vidplayer = document.getElementById("videlemcon");
+            //        // _vidplayer.innerHTML = "";
+            //        // _vidplayer.innerHTML = html;
+
+            //        // alert("Streaming Finished! " + req_stream.statusText);
+            //    })
+            // }
+
+            // if (currentVidInfo.connectionId === "") {
+            //    var waitPageId = setInterval(function () {
+            //        currentVidInfo.connectionId = parentWindow.getPageId();
+            //        // console.log("New Page ID = " + currentVidInfo.connectionId);
+            //        if (currentVidInfo.connectionId != "") {
+            //            clearInterval(waitPageId);
+            //            startStreaming();
+            //        }
+            //    }, 10);
+            // } else {
+            //    // startStreaming();
+            // }
+        });
+    })();
+</script>

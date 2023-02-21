@@ -1,0 +1,110 @@
+﻿
+
+
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px){
+		/*.hm-linked-div {
+			
+		}*/
+/*.hm-thumb-con {
+			width: 33.3333333%;
+		}*/
+.menu-container {
+	display: none;
+}
+
+.mobile-menu-container {
+	display: block;
+}
+
+.loginout-ul {
+	display: none;
+}
+
+.upgrade-to-premium-con {
+	display: none;
+}
+
+.des-menu-toggler-con {
+	display: none;
+}
+
+.search-input-con {
+	padding: 0;
+	width: 100%;
+}
+
+.ln-logo {
+	padding: 0;
+	padding-left: 7px;
+}
+
+	.ln-logo.a {
+		font-size: 11pt;
+		font-weight: bold;
+		color: white;
+	}
+
+.search-input-con {
+	margin-left: 13%;
+	padding: 0px;
+	height: auto;
+}
+
+	.search-input-con.form {
+		width: 98%;
+		padding: 0px;
+	}
+
+		.search-input-con.form.input[name='searchbar'] {
+			margin-bottom: -15px;
+		}
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+	.hm-linked-div {
+		width: 17%;
+	}
+
+	.mobile-menu-container {
+		display: none;
+	}
+
+	.loginout-ul {
+		display: block;
+	}
+
+	.more-option-container {
+		padding: 0;
+	}
+
+	.upgrade-to-premium-con {
+		display: block;
+		padding: 5px;
+		height: auto;
+	}
+
+	.des-menu-toggler-con {
+		display: block;
+	}
+
+	.search-input-con {
+		width: 83.3333333%;
+		padding-right: 15px;
+		padding-left: 15px;
+	}
+
+	
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+/**/ @media only screen and (min-width: 1200px) {
+	/*.hm-linked-div {
+			width: 22%;
+		}*/
+}
+
+* /*/

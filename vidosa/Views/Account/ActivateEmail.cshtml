@@ -1,0 +1,10 @@
+﻿@model vidosa.Models.EmailList
+
+<p>
+    Thank you for subscribing
+</p>
+
+@if (ViewBag.IsAjax)
+{
+    <input type="hidden" value="@ViewBag.Url" id="ajaxurl" />
+}

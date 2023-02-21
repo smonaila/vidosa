@@ -1,0 +1,160 @@
+﻿@model vidosa.Models.LoginView
+@using vidosa.Models
+@using Microsoft.Owin.Security
+
+@{
+    ViewBag.Title = "Login to Vidosa";
+}
+
+<div class="col-lg-4 col-xs-offset-1 col-xs-10 col-lg-offset-4 col-sm-8 col-sm-offset-2 form-container vdm-loin-frm-wrapper">
+    @using (Ajax.BeginForm("Login",
+        new
+        {
+            ispartial = true
+        }, new AjaxOptions()
+        {
+            HttpMethod = "post",
+            LoadingElementId = "loading-login-img",
+            UpdateTargetId = "container",
+            InsertionMode = InsertionMode.Replace,
+            OnSuccess = "loginsuccess",
+            OnBegin= "beforeasyncCall"
+        },
+        new
+        {
+
+        }))
+    {
+        @*@Html.AntiForgeryToken()*@
+        <div class="form-horizontal">
+            <h5 style="color:black">Login</h5>
+            <hr />
+            <p style="font-size:10pt;color:gray">use your account details to login or create an account</p>
+            @if (ViewData.ModelState.Keys.Count > 1)
+            {
+                <div class="col-lg-12 loginerror">
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                </div>
+            }
+            <div class="form-group">
+                <div class="col-md-12">
+                    @Html.EditorFor(model => model.Username, new { htmlAttributes = new { @class = "form-control", placeholder = "Email e.g thato@skisazana.co.za" } })
+                    @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-12">
+                    @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", placeholder = "password" } })
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-lg-12">
+                    @Html.CheckBoxFor(model => model.RememberMe, new { @class = "reme-checkbox" }) Remember Me
+                </div>
+            </div>
+            <input type="hidden" id="ReturnUrl" name="ReturnUrl" value="@Request.QueryString["ReturnUrl"]" />
+            <div class="form-group">
+                <div class="col-md-offset-0 col-md-12">
+                    <span id="loading-login-img" class="">
+                        <img src="~/Images/loading.gif"
+                             width="20"
+                             style="position:relative;" />
+                    </span>
+                    <input type="submit"
+                           value="Login"
+                           class="btn btn-primary"
+                           style="background-color:orange;font-weight:bold;font-size: 10pt;border: none;" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-0 col-md-12">
+                    @Ajax.ActionLink("Create Account","CreateAccount", "Account",
+                    new
+                    {
+                        ispartial=true,
+                        return_url=Request.QueryString["ReturnUrl"]
+                    },
+                    new AjaxOptions()
+                    {
+                        UpdateTargetId = "container",
+                        InsertionMode = InsertionMode.Replace,
+                        HttpMethod = "GET",
+                        LoadingElementId = "async-page-loading-id"
+                    },
+                    new
+                    {
+                        title="Create an Account",
+                        @class= "btn-create-acc"
+                    })
+                </div>
+                <div class="col-md-offset-0 col-md-12" style="margin-top:3%">
+                    @Ajax.ActionLink("Forgot your password?", "ResetPassword", "Account",
+                    new
+                    {
+                        ispartial=true
+                    },
+                    new AjaxOptions()
+                    {
+                        UpdateTargetId = "container",
+                        InsertionMode = InsertionMode.Replace,
+                        HttpMethod = "GET",
+                        LoadingElementId = "async-page-loading-id",
+                    },
+                    new
+                    {
+                        title= "Password Reset",
+                        style="font-size:10pt;font-weight:bold"
+                    })
+                </div>
+            </div>
+        </div>
+    }
+    @*<div class="col-lg-12">
+        <div class="external-login">
+            <section id="socialLoginForm">
+                <h4>Use another service to log in.</h4>
+                <hr />
+                @{
+                    var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes();
+                    if (loginProviders.Count() == 0)
+                    {
+                        <div>
+                            <p>
+                                There are no external authentication services configured. See <a href="https://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
+                                for details on setting up this ASP.NET application to support logging in via external services.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (AuthenticationDescription p in loginProviders)
+                        {
+                            <a href="/Account/ExternalLogin?provider=@p.AuthenticationType&ReturnUrl=@Request.QueryString["ReturnUrl"]"
+                               class="btn btn-default" id="@p.AuthenticationType"
+                               name="provider" value="@p.AuthenticationType"
+                               title="Log in using your @p.Caption account"
+                               style="display:block;width:100%;margin-bottom:1%">
+                                @p.AuthenticationType
+                            </a>
+                        }
+                    }
+                }
+            </section>
+        </div>
+    </div>*@
+</div>
+@*@if (false)
+    {
+        <input type="hidden" value="@ViewBag.Url" id="ajaxurl" />
+    }*@
+<script>
+    (function () {
+        if ($("#checkout-link").length > 0) {
+            $("#checkout-link").replaceWith("");
+        }
+
+
+    })();
+
+</script>

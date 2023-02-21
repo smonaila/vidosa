@@ -1,0 +1,17 @@
+﻿@model vidosa.Models.Video
+@using vidosa.Models
+@{
+    List<Comment> comments = (List<Comment>)ViewBag.Comments;
+}
+
+@Html.Raw(HttpUtility.HtmlDecode(Model.VideoDetails))
+
+@for (int i = 0; i < comments.Count; i++)
+{
+    <h4>@string.Format("{0} {1}", 
+       comments[i].User.FirstName, 
+       comments[i].User.LastName)</h4>
+    <p>
+        @comments[i].Content
+    </p>
+}

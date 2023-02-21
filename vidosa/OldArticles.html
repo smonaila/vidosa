@@ -1,0 +1,321 @@
+﻿@model IEnumerable<vidosa.Models.Article>
+    <link href="~/Content/jquery-ui.css" rel="stylesheet" />
+    <link href="~/Content/customs/codeeditor.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-ui.js"></script>
+    <script>
+    $("#articles").accordion();
+    </script>
+    <div id="articles">
+        <h2>What is a Variable?</h2>
+        <div class="ui-widget-content">
+            <p>
+                A variable is a place holder for a value. A named memory slot with type to store data. Variables have two main important properties a name and the type of data stored into this named memory slot.
+            </p>
+
+            <p>If you declare a variable named number1 of type int, this means that you can only store integer numbers into that variable. There are basically two different types of variable, value type variables and reference <a href="/blog/getpost/types-in-csharp-programming" title="Types in C# Programming">type</a> variable. These two types of variables can categorised into simpler types. The details of variable types is beyond the scope of this article to keep it simple we not going to delve into details of variable type but rather what is the variable question?</p>
+            <p>DECLARING a variable.</p>
+            <p>
+                Declaring a variable means instructing a compiler to allocate a certain amount of memory where you are going to store a certain type of data. Different languages use different syntax to declare a variable.
+                The following are Examples of how to declare a variable in C#.
+            </p>
+            <pre>
+                int number;
+                string name;
+                double pi;
+                DateTime dob;
+            </pre>
+
+            <p>
+                In the above examples int, string, double, DateTime are the types of variables number, name, pi, dob respectively. number, name, pi and dob are variable names. Variables should be unique within the scope of your code where they are declared.
+            </p>
+        </div>
+
+        /* Understanding Object Lifetime */
+        <div>
+            <p>CLR manages the allocated class instances (objects) via garbage collection. When you write a managed code in C# you never have to deallocate memory occupied by the managed objects. .NET objects are allocated to region of memory called managed heap, where they will be automatically destroyed by the garbage collector “sometime in the future”.</p>
+
+            <h2>Classes, Objects, and References.</h2>
+            <p>A class is a blueprint that describes how an instance of a type will look and feel in memory. Classes are defined within a code file (which in C# takes a *.cs extension by convension).  Let’s look at the following example of a class.</p>
+
+            <figure>
+                <figcaption id="example1-caption"></figcaption>
+                <pre aria-labelledby="example1-caption" aria-describedby="example1-description">
+                <code>                                
+                <b>class</b> Car
+                 {
+                    public int CurrentSpeed {get; set; }
+                    public string PetName {get; set; }
+
+                    public Car(){}
+                    public Car(string name, int speed)
+                    {
+                        PetName = name;
+                        CurrentSpeed = speed;
+                    }
+
+                    public override string ToString()
+                    {
+                        return string.Format("{0} is going {1} MPH", PetName, CurrentSpeed);
+                    }
+                 }
+                </code>
+            </pre>
+            </figure>
+
+            <p>
+                After a class has been defined the next task is to create any number of objects using the C# new keyword. It is important to note that the new keyword returns a reference to the object in the heap, not the actual object itself. A reference variable declared inside the method scope is stored on the stack for further use in your application.
+            </p>
+
+            <figure>
+                <figcaption id="example1-caption">
+
+                </figcaption>
+                <pre aria-labelledby="example1-caption" aria-describedby="example1-description">
+                <code>
+                <b>class</b> Program
+                {
+                    <b>static</b> <b>void</b> Main(<b>string</b>[] args)
+                    {
+                        Console.WriteLine("***** GC Basics *****");
+                        Console.WriteLine();
+
+                        // Create a new Car object on
+                        // the managed heap. We are
+                        // returned a reference to this
+                        // object ("refToMyCar").
+
+                           Car refToMyCar = new Car("Zippy", 50);
+
+                        // The C# dot operator (.) is used
+                        // to invoke members on the object
+                        // using our reference variable.
+                          Console.WriteLine(refToMyCar.ToString());
+                          Console.ReadLine();
+                    }
+                }
+                </code>
+                </pre>
+            </figure>
+
+            <p>The following figure illustrates the class, object, and reference relationship.</p>
+            <img src="/Images/Blogs/objectAllocation.jpg" />
+
+            <h2>The Basics of Object Lifetime</h2>
+            <p>Writing C# application, the .NET runtime known as CLR(Common Language Runtime) will take care of the managed heap without your direct intervension. The golden rule is that:</p>
+            <br />
+            <p>
+                Once an object is created, the garbage collector will destroy an object when it is no longer needed. How does a garbage collector determines when an object is no longer needed? The simple answer to this question is that the garbage collector will remove an object when it is no longer reachable that is when the method where theobject was created returns.
+            </p>
+
+            <figure>
+                <figcaption id="example1-caption">
+
+                </figcaption>
+                <pre aria-labelledby="example1-caption" aria-describedby="example1-description">
+                <code>                
+                <b>static</b> <b>void</b> MakeACar(<b>string</b>[] args)
+                {
+                    // If myCar is the only reference to the Car object,
+                    // it *may* be destroyed when this method returns.
+                    Car myCar = new Car();
+                }
+                </code>
+                </pre>
+            </figure>
+        </div>
+
+        /* Types in C# Programming **/
+        <div>
+            <p>
+                C# is a strongly-typed language. Variables and constant are declared with a type. Expression that evaluates to a value also has a type. When you define a method that returns a value to a caller you must specify a type of the data value that will be returned by the method. Where a method accepts input parameters the type must be specified for each parameter as well.
+            </p>
+            <p>
+                The .NET class library defines a set of built-in pre-defined simple types as well as more complex types that represent a wide variety of logical constructs, such as file system, network connections, collection and array of objects, and dates. A typical C# program uses types from the class library as well as user-defined types that model the concepts that are specific to the program’s domain.
+            </p>
+            <p>The information stored in a type can include the following:</p>
+            <ul>
+                <li>
+                    The storage space that a variable of the type requires.
+                </li>
+                <li>
+                    The maximum and minimum values that it can represent.
+                </li>
+                <li>
+                    The members (methods, fields, events, and so on) that it contains.
+                </li>
+                <li>
+                    The base type it inherits from.
+                </li>
+                <li>
+                    The location where the memory for variables will be allocated at run time.
+                </li>
+                <li>
+                    The kinds of operations that are permitted.
+                </li>
+            </ul>
+            <p>
+                The compiler uses the type information to ensure that operations performed by your code are type safe. The compiler may restrict certain operations to a variable depending on the type of the variable. For example the compiler will not allow mathematical operations to a variable of type string or bool. Trying to make a mathematical operation to <a href="/blog/getpost/what-is-a-variable">variable</a> of these type results in an error as follows:
+            </p>
+
+            <figure>
+                <figcaption id="example1-caption">
+
+                </figcaption>
+                <pre aria-labelledby="example1-caption" aria-describedby="example1-description">
+                <code>
+                        int a = 5;
+                        int b = a + 7; // This is OK
+
+                        bool test = true;
+
+                        int c = a + test; // Error. Operator "+" cannot be applied to operands of type "bool".
+                    </code>
+                </pre>
+            </figure>
+
+            <h2>Specifying Types in Variable Declarations</h2>
+
+            <p>
+                When you declare a variable or constant in a program, you must either specify its type or use the var keyword to let the compiler infer the type. The following example shows some variable declarations that use both built-in numeric types and complex user-defined types:
+            </p>
+            <figure>
+                <figcaption id="example1-caption">
+
+                </figcaption>
+                <pre aria-labelledby="example1-caption" aria-describedby="example1-description">
+                <code>
+                    // Declaration only:
+                    float temperature;
+                    string name;
+                    MyClass myClass;
+
+                    // Declaration with initializers (four examples):
+                    char firstletter = 'C';
+                    var limit = 3;
+                    int[] source = { 0, 1, 2, 3, 4, 5 };
+                    var query = from item in source
+                                where item <= limit
+                                select item;
+                </code>
+                </pre>
+            </figure>
+            <p>The types of method parameters and return values are specified in the method signature. The following signature shows a method that requires an int as an input and returns a string.</p>
+
+            <figure>
+                <figcaption id="example1-caption">
+
+                </figcaption>
+                <pre aria-labelledby="example1-caption" aria-describedby="example1-description">
+                <code>
+                    <b>private</b> <b>string</b>[] names{ "Spencer", "Sally", "Doug" };
+                    <b>public</b> <b>string</b> GetName(int ID)
+                    {
+                        if(ID < names.Length)
+                            return names[ID];
+                        else
+                            return string.Empty;
+                    }                    
+                </code>
+                </pre>
+            </figure>
+            <p>Each variable is unique within the scope where it is defined. For example if you declare a variable with the name “name” with the method scope you will not declare another variable with the same name within the scope of that method. The same applies if you declare the variable within the class scope.</p>
+            <p>
+                The compiler will not allow you assign a value with a type that is not compatible with the type specified when the variable was declared. For example you cannot declare a variable of type int and assign a data value of type string. However some type can be easily converted to other types. For example you can declare the variable of type double and assign to it a data value of type int because int can be converted to double.
+            </p>
+            <p>
+                Sometimes they may be a data loss during the conversion and therefor care need to be taken when assigning value of one type to a variable of another type.
+            </p>
+        </div>
+
+
+        <h2>Programming C# - Visual Studio Features</h2>
+        <div class="ui-widget-content">
+            <h4>Using Solution Explorer</h4>
+            <p>The Solution utility (accessible from the View menu) allows you to view the set of all content files and referenced assemblies that comprise the current project (see Figure 2-9). Also notice, that you can expand a given file (such as <em>Program.cs</em>) to see the code types defines within the file in question.</p>
+            <p>
+                <img src="~/Images/FirstApp-img2.png" title="Programming C# - Using solution Explorer" class="firstprogramimg" /><br />
+                <br />
+            </p>
+            <p>
+                Notice that the References folder of Solution Explorer displays a list of each assembly currently referenced, which will be different based on the type of project you create and the selected version of the .NET framework you are compiling against. The Console Application we have created in the "Building .NET Applications Using Visual Studio" gives us a minimal set of libraries which are automatically included e.g System.dll, System.Core.dll, System.Data.dll, and so forth.
+            </p>
+            <br />
+            <h4>Programming C# - Referencing External Assemblies</h4>
+            <p>To reference an external assembly all you need to do is to right click on the reference folder of your solution explorer and select the Add reference option</p>
+            <p>
+                <img src="~/Images/Referencing-externalassemblies.png" title="Referencing External Assemblies" class="firstprogramimg" />
+            </p>
+            <p>
+                To see the effect of adding an external assembly search for the System.Windows.Forms.dll by start typing "windows" on the search bar of the window presented to you after selecting the "Add Reference" option. Also make sure that you have selected Assemblies oon the left most side of the window.
+            </p>
+        </div>
+        <h2>Programming C# - Viewing Project Properties</h2>
+        <div class="ui-widget-content">
+            <p>There is a number of things that you can do with project properties including security settings, strongly name your assembly, deploy your application, insert application resources, and configure pre- and post-build events.</p>
+            <h3>The Class View Utility</h3>
+            <p>This utility has a responsibility to show all of the types in your current project from an object-oriented perspective it is different from the Solution Explorer, the latter shows the default file-based view</p>
+            <p>
+                <img src="~/Images/classutilityimage.png" />
+            </p>
+            <p>
+                double clicking on the type will make Visual Studio to automatically open the correct C# code file,and place your mouse cursor at the correct location. using this feature you are also able to open any referenced assembly and drill into the contained namespaces, types, and members.
+            </p>
+            <h3>The Object Browser Utility</h3>
+            <p>
+                To investigate the set of referenced assemblies within your current project, Visual Studio provides developers with the Object Browser which can accessed through the View menu.
+            </p>
+            <p>
+                <img src="~/Images/ObjectBrowser.png" title="Programming C# - Object Browser" />
+            </p>
+        </div>
+        <h2>Programming C# -  The Anatomy of a C# Program.</h2>
+        <div role="main" class="ui-widget-content">
+            <p>In this article I begin the formal investigation of the C# programming language by presenting the anatomy(The basic structure) of a C# program. this is the basic topic that you need to understand as you will be exploring the .NET framework. we begin the journey by explaining the creation of an application object and the enry point Main() method.</p>
+
+            <p id="example1-description">
+                C# requires that a program be contained inside the type definition. to get the ball rolling lets create an Example Program to explain how all this come together.
+            </p>
+            <figure>
+                <figcaption id="example1-caption">
+
+                </figcaption>
+                <pre aria-labelledby="example1-caption" aria-describedby="example1-description">
+                <code>
+                <b>using</b> System;
+                <b>using</b> System.Collections.Generic;
+                <b>using</b> System.Linq;
+                <b>using</b> System.Text;
+                <b>using</b> System.Threading.Tasks;
+
+                <b>namespace</b> ConsoleApp
+                    {
+                <b>class</b> Program
+                        {
+                <b>static</b> <b>void</b> Main(<b>string</b>[] args)
+                            {
+                                Console.WriteLine("***** Our First C# App *****");
+                                Console.WriteLine("***** Hello, we won't write 'Hello World!' *****");
+                                Console.WriteLine();
+
+                                // Wait for Enter key to be pressed before shutting down.
+                                Console.ReadLine();
+                            }
+                        }
+                    }
+                </code>
+            </pre>
+            </figure>
+            <p>
+                Here we have a definition for a class type with a single method named Main(). The defaults for a C# Program are that the class containing the Main method would named <em>Program</em>; you can however name the class to anything you want. Every executable C# program(console Application, Windows Desktop application, or Windows Servoce) must contain a class that define the Main() method which is an indication to the compile while it should start executing the code for that application (It called an entry point for the compiler).
+            </p>
+            <p>
+                The Application can have multiple classes that contain the Main() method but the developer need to indicate to the compiler which one should be used as the entry point using the /main command directive otherwise the compiler will use the first one it finds during its search for the application object(the application object is the class that define the Main method.)
+            </p>
+            <p>
+                The signature of the Main method is adorned with the <em>static</em> keyword which makes the method to be class level not object level. What this means is that the compiler do not need to create an Object of the class that define the method in order to be able to call the method, the method is called on the class level.
+            </p>
+            <p>
+                The Main method accept as its argument an array of strings which are arguments to supply when starting the application. Finally the method is adorned with the void keyword to let compiler know that it does not have to return to the caller after the method has executed.
+            </p>
+        </div>
+    </div>
