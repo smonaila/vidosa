@@ -185,6 +185,10 @@
                 return true;
             },
             Mp4Structure: {
+                initSeg:  {
+                    objboxes: [],
+                    content: null,
+                },
                 free: function (box) {
                     let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
 
@@ -448,20 +452,20 @@
                     byteIndex += (((trunBoxView.getUint32(8) & 0x000800) === 0x000800) ? 4 : 0);
                     trunObj.composite_time_offset = (((trunBoxView.getUint32(8) & 0x000800) === 0x000800) ? trunBoxView.getUint32(byteIndex) : 0);
 
-                    console.log("Is the Composition Time Available? " + ((trunBoxView.getUint32(8) & 0x000800) === 0x000800));
-                    console.log("tr_flags: " + (trunBoxView.getUint32(8)) + "\nsample_count: " + (trunBoxView.getUint32(12)) + 
-                        "\ndata_offset: " + trunObj.data_offset +
-                        "\nfirst_sample_flags: " + trunObj.first_sample_flags)
-                        + "\nsample_duration: " + trunObj.sample_duration
-                        + "\ncomposite_time_offset: " + trunObj.composite_time_offset;
+                    // console.log("Is the Composition Time Available? " + ((trunBoxView.getUint32(8) & 0x000800) === 0x000800));
+                    // console.log("tr_flags: " + (trunBoxView.getUint32(8)) + "\nsample_count: " + (trunBoxView.getUint32(12)) + 
+                    //    "\ndata_offset: " + trunObj.data_offset +
+                    //    "\nfirst_sample_flags: " + trunObj.first_sample_flags)
+                    //    + "\nsample_duration: " + trunObj.sample_duration
+                    //    + "\ncomposite_time_offset: " + trunObj.composite_time_offset;
 
-                    console.log("================== Start Printing Details ================================");
-                    console.log("tr_flags: " + (trunObj.tr_flags) + "\tdata_offset: " +
-                        trunObj.data_offset + "\tfirst_sample_flags: " +
-                        trunObj.first_sample_flags +
-                        "\tsample_duration: " + trunObj.sample_duration + "\tsample_count: " +
-                        trunObj.sample_count);
-                    console.log("=================== End Printing Details ==================================");
+                    // console.log("================== Start Printing Details ================================");
+                    // console.log("tr_flags: " + (trunObj.tr_flags) + "\tdata_offset: " +
+                    //    trunObj.data_offset + "\tfirst_sample_flags: " +
+                    //    trunObj.first_sample_flags +
+                    //    "\tsample_duration: " + trunObj.sample_duration + "\tsample_count: " +
+                    //    trunObj.sample_count);
+                    // console.log("=================== End Printing Details ==================================");
 
                     return trunObj;
                 },
@@ -683,7 +687,7 @@
                 // let initBuffer = initseg;
 
                 // get all the boxes inside the initialization segment.
-                let validCollection = fileContent.processSeg.getAllboxes(initseg);
+                let validCollection = fileContent.processSeg.Mp4Structure.initSeg.objboxes;
                 let initBoxes = [];
                 if (validCollection.isvalid) {
                     initBoxes = validCollection.boxes;
@@ -698,7 +702,7 @@
                 });
 
                 // get all the children of moov box
-                let validmoov = fileContent.processSeg.getboxChildren(initseg.slice(moovBox.offset, moovBox.offset + moovBox.size));      
+                let validmoov = fileContent.processSeg.getboxChildren(fileContent.processSeg.Mp4Structure.initSeg.content.slice(moovBox.offset, moovBox.offset + moovBox.size));      
                 let moovChildren = [];
 
                 if (validmoov.isvalid) {
@@ -714,7 +718,7 @@
                 });
 
                 // get all the children of mvex box.
-                let objmvexChildren = fileContent.processSeg.getboxChildren(initseg.slice(moovBox.offset, moovBox.offset + moovBox.size).slice(mvexoffsets.offset, mvexoffsets.offset + mvexoffsets.size));
+                let objmvexChildren = fileContent.processSeg.getboxChildren(fileContent.processSeg.Mp4Structure.initSeg.content.slice(moovBox.offset, moovBox.offset + moovBox.size).slice(mvexoffsets.offset, mvexoffsets.offset + mvexoffsets.size));
                 let mvexChildren = [];
 
                 if (objmvexChildren.isvalid) {
@@ -726,7 +730,7 @@
 
                 // get the buffer for mvex
                 console.log("Mvex buffer got!");
-                let mvexBuffer = initseg.slice(moovBox.offset, moovBox.offset + moovBox.size).slice(mvexoffsets.offset, mvexoffsets.offset + mvexoffsets.size);
+                let mvexBuffer = fileContent.processSeg.Mp4Structure.initSeg.content.slice(moovBox.offset, moovBox.offset + moovBox.size).slice(mvexoffsets.offset, mvexoffsets.offset + mvexoffsets.size);
                 let trexs = mvexChildren.filter(function (mvc) { return mvc.name === "trex" });
                 let trafs = children.filter(function (box) {
                     return box.name === "traf";
@@ -775,7 +779,8 @@
                         console.log("Getting the reference to the Trunoffsets!");
                         fun = fileContent.processSeg.Mp4Structure[trunoffsets[trunIndex].name];
                         console.log("Calling Trunoffsets!");
-                        let trunCon = fun(moofbox.slice(trafs[i].offset, trafs[i].offset + trafs[i].size).slice(trunoffsets[trunIndex].offset, trunoffsets[trunIndex].offset + trunoffsets[trunIndex].size));
+                        let trunCon = fun(moofbox.slice(trafs[i].offset, trafs[i].offset + trafs[i].size).slice(trunoffsets[trunIndex].offset,
+                            trunoffsets[trunIndex].offset + trunoffsets[trunIndex].size));
                         console.log("Getting the reference to the tfhdoffsets!");
                         fun = fileContent.processSeg.Mp4Structure[tfhdoffsets.name];
                         console.log("Calling tfhdoffsets!");
@@ -925,16 +930,18 @@
                                             sidxBoxes[sidxIndex].offset + sidxBoxes[sidxIndex].size)).referenceId;
 
                                         if (referenceId === mooftrackId) {
-                                            let initialization = fileContent.mpdFile.querySelector("Initialization");
-                                            let start = parseInt(initialization.getAttribute("range").split("-")[0]);
-                                            let end = parseInt(initialization.getAttribute("range").split("-")[1]);
-                                            let byteLength = (end - start) + 1;
+                                            //let initialization = fileContent.mpdFile.querySelector("Initialization");
+                                            //let start = parseInt(initialization.getAttribute("range").split("-")[0]);
+                                            //let end = parseInt(initialization.getAttribute("range").split("-")[1]);
+                                            //let byteLength = (end - start) + 1;
 
-                                            let initSeg = fileContent.mediaFile.slice(start, start + byteLength);                                            
+                                            //let initSeg = fileContent.mediaFile.slice(start, start + byteLength); 
+                                            
                                             console.log("GetSamples of the Segment");
                                             let sampleEPT = fileContent.processSeg.getFirstSample(segment.slice(boxOffset, boxSize + boxOffset),
                                                 segment.slice(sidxBoxes[sidxIndex].offset,
-                                                    sidxBoxes[sidxIndex].offset + sidxBoxes[sidxIndex].size), initSeg);                                           
+                                                    sidxBoxes[sidxIndex].offset + sidxBoxes[sidxIndex].size),
+                                                fileContent.processSeg.Mp4Structure.initSeg.content);                                           
 
                                             objsampleEPT.ept = sampleEPT.ept;
                                             objsampleEPT.isinit = true;
@@ -1046,9 +1053,16 @@
                 var end = initialization.getAttribute("range").split("-")[1].trim();
                 var byteLength = (end - start) + 1;
 
+                var initSegment = fileContent.mediaFile.slice(start,
+                    start + byteLength);
+
+                var boxCollection = this.processSeg.getAllboxes(initSegment);
+
+                this.processSeg.Mp4Structure.initSeg.content = initSegment;
+                this.processSeg.Mp4Structure.initSeg.objboxes = boxCollection;
+
                 console.log("Initialization Coordinates: { Start = " + start + ", End = " + end + " }");
-                var isConforming = fileContent.processSeg.getConformence(fileContent.mediaFile.slice(start,
-                    start + byteLength));
+                var isConforming = fileContent.processSeg.getConformence(initSegment);
             }            
         },
         appendFirstSegment: function () {
@@ -1101,7 +1115,7 @@
             }
         },
         mergeSeg: function (seg) {
-            try {
+            try {                
                 var segView = new DataView(seg);
                 for (var i = 0; i < segView.byteLength; i++) {
                     try {
@@ -1187,7 +1201,6 @@
                                 fileContent.sourceBuffInf.error = false;
                             }, 100);
                         }
-
                         // fileContent.playerError(e);
                     }
                     mediaSource.addEventListener("sourceopen", function () {
@@ -1413,7 +1426,7 @@
                     console.log("played and waiting");
                     fileContent._appendSegment();
                 }
-            }0
+            }
         } catch (e) {
             if (e instanceof Error) {
                 console.log(e.name + ":" + e.message + ":" + e.stack);
@@ -1474,9 +1487,14 @@
         }
     }
 
+    // Receive the merged segment from the web worker.
     player_worker.onmessage = function (event) {
         try {
-             processSeg(event.data);
+            var data = event.data;
+            if (data.init) {
+
+            }
+            processSeg(event.data);
         }
         catch (e) {
             // console.log("Error when apending " + e.MessageError);
@@ -1524,6 +1542,7 @@
             });
         } else {
             if (data.initialization && !objsegment.initRec) {
+                objsegment.arrayCon = [];
                 objsegment.initRec = true;
                 console.log("Initialization Received!");
                 objsegment.arrayCon.push(data.currentvideo.content);

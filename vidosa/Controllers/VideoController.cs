@@ -812,6 +812,8 @@ namespace vidosa.Controllers
 
                                 // Read the Segment from the file
                                 FileInfo.Item2.Read(fileBytes, 0, fileBytes.Length);
+
+
                                 int bytesIndex = 0;
 
                                 while (bytesIndex < fileBytes.Length)

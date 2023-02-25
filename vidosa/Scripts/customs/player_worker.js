@@ -641,8 +641,13 @@ var rec_con = function (data) {
 
     // console.log("About to read the blob ");
     let fileReader = new FileReader();
-    fileReader.addEventListener("loadend", function (e) {        
-        postMessage({ segment: fileReader.result });        
+    fileReader.addEventListener("loadend", function (e) {     
+        var content = fileReader.result;
+        var getFtype = getallBoxes(content).find(function (b) {
+            return b.name === "ftyp";
+        });
+        var isInit = getFtype === undefined ? false : true;
+        postMessage({ segment: fileReader.result, init: isInit });        
     });
     fileReader.readAsArrayBuffer(blob);
 }

@@ -461,6 +461,7 @@ $(document).ready(function () {
 
     // next related video page loaded.
     window.nextLoaded = function (data) {
+        // alert("Ajax Page Loaded!");
         var btnSub = document.getElementById("btn-subscribe");
         var videoId = document.getElementById("videoId").getAttribute("value");        
         var spanReaction = document.getElementsByClassName("reaction");
