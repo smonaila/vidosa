@@ -568,7 +568,6 @@ namespace vidosa.Controllers
                         vidosaContext.Entry(OldReaction).State = EntityState.Modified;
 
                     }
-
                     vidosaContext.SaveChanges();
                     return View();
                 }
@@ -933,7 +932,6 @@ namespace vidosa.Controllers
                     XElement Period = xDocument.Descendants(xNamespace + "Period")
                         .Where(p => p.Attribute("type").Value.Equals("ad") && Convert.ToInt32(p.Attribute("start").Value) == AdTime * 10).FirstOrDefault();
 
-
                     if (Period is null)
                     {
                         return;
@@ -1245,8 +1243,8 @@ namespace vidosa.Controllers
                         CommentReactions = Context.Reactions.Where(r => ((r.ContentId == video.VideoId) && (r.ContentType == ContentType.Comment))).ToList();
 
                         channelSubs = (from cs in Context.ChannelSubs.ToList()
-                                                                where cs.ChannelId == video.UserId
-                                                                select cs);
+                                       where cs.ChannelId == video.UserId
+                                       select cs);
                         ViewBag.IsSubscribed = channelSubs.ToList().Exists(cs => cs.Username == applicationUser.Email);
 
                         ViewBag.VideoLikes = VideoReactions.Where(r => r.Reaction == ReactionType.Like).ToList().Count;

@@ -2,24 +2,15 @@
 /// <reference path="../jquery.signalr-2.4.0.min.js" />
 
 (function () {
-    var mediaSource = null;
-    var sourceBuffer = null;
+    var mediaSource;
+    var sourceBuffer;
     var vidplayer = $("#vidplayer")[0];
-    var fileReader = new FileReader();
     var videoId = $("#videoId").val();
     var descvalue = document.getElementById("descvalue").value;
-    var bandwidth = $("#bandwidth").val();
     var parentWindow = window.parent;
     var duration = null;
-    var progressBar = $(".progress-buffered");
     var totalwidth = 0;
-    var segments = [];
     var windowState = false;
-
-    var mediaFile = null;
-    var mfileView = null;
-
-    var testVid = document.createElement("video");
 
     // A web worker for processing the video streams
     if (typeof (Worker) != "undefined") {
@@ -27,10 +18,6 @@
             player_worker = new Worker("/scripts/customs/player_worker.js");
         }
     }
-
-    var isomediaStream = {
-        streamId: ""
-    };
 
     // waiting for more data.
     let waiting = function () {
@@ -40,69 +27,7 @@
         console.log("Waiting for Buffer");
         fileContent.videoElement.waiting = true;
         fileContent.videoElement.playing = false;
-
-        // if (fileContent.playerInitialized && !fileContent.isForceAppend) {
-        //    console.log("Force Append Buffer");
-        //    if (fileContent.byteOffset > fileContent.sliceOffset) {
-        //        // fileContent._appendBuffer();
-                
-        //    }
-        //    // fileContent.isForceAppend = true;
-        // }
     }
-
-    let getType = function (ftype) {
-        let ftypView = new DataView(ftype);
-
-        return String.fromCharCode(ftypView.getUint8(0)) + String.fromCharCode(ftypView.getUint8(1)) +
-            String.fromCharCode(ftypView.getUint8(2)) + String.fromCharCode(ftypView.getUint8(3));
-    }
-
-    // Insert an Ad
-    let playAd = function () {
-
-    }
-
-    // the segCounter is temporary for testing to move between an Ad and the currently playing video.
-    let segCounter = 0;
-    let resetParser = function (seg) {
-        sourceBuffer.abort();
-        sourceBuffer.mode = "sequence";
-    }
-
-    // Append Initialization Segment
-    // let AppendInit = function (event) {
-    //    if (vidplayer.currentTime > 0 && vidplayer.currentTime <= sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)) {
-    //        buffer.push(event.data.segment);
-    //    } else {
-    //        console.log("First Init");
-    //        sourceBuffer.appendBuffer(event.data.segment);
-    //    }
-    // }
-
-    var children = function (box) {
-        try {
-            let childboxSize = 0;
-            let childboxOffset = 8;
-            let boxView = new DataView(box);
-
-            let currentBoxLength = boxView.getInt32(0);
-            let boxCollection = [];
-
-            do {
-                let boxInf = getboxInf(box.slice(childboxOffset, childboxOffset + 8));
-
-                let childboxName = boxInf.name;
-                childboxSize = boxInf.size;
-                boxCollection.push({ size: childboxSize, name: childboxName, offset: childboxOffset });
-                childboxOffset += childboxSize;
-            } while (childboxOffset < currentBoxLength);
-            return boxCollection;
-        } catch (e) {
-            console.log("Error on the children method");
-        }
-    }
-    
 
     var mpdFile;
     var ads = [];
@@ -118,15 +43,6 @@
         mpdFile = file;
     }
 
-    // Parse mpd presentation times
-    var parsePDuration = function (dur) {
-        let h = dur.split("PT")[1].split("H")[0];
-        let m = dur.split("PT")[1].split("H")[1].split("M")[0];
-        let s = dur.split("PT")[1].split("H")[1].split("M")[1].split("S")[0];
-
-        // alert(h + ":" + m + ":" + s);
-    }
-
     // compute durations
     var getDurations = function (dur) {
 
@@ -137,933 +53,1621 @@
         return ((h * 60 * 60) + (m * 60) + (Math.floor(s)));
     }
 
-    // object to hold the streaming file content.
-    var fileContent = {
-        processSeg: {
-            boxes: ["sidx", "moov", "free", "mdat", "ftyp", "tref", "trak", "pdin", "mvhd", "tkhd",
-                "edts", "elst", "mdia", "mdhd", "hdlr", "minf", "vmhd", "smhd", "hmhd", "nmhd",
-                "dinf", "dref", "stbl", "stsd", "stts", "ctts", "stsc", "stsz", "stz2", "stco",
-                "co64", "stss", "stsh", "padb", "stdp", "sdtp", "sbgp", "sgpd", "subs", "trep",
-                "mvex", "mehd", "trex", "ipmc", "moof", "mfhd", "traf", "tfhd", "trun",
-                "sdtp", "sbgp", "subs", "mfra", "tfra", "mfro", "mdat", "free", "skip", "iods",
-                "udta", "cprt", "meta", "hdlr", "dinf", "dref", "iloc", "ipro", "tfdt",
-                "sinf", "frma", "imif", "schm", "schi", "iinf", "xml ", "bxml", "pitm"],
-            getboxInf: function (boxInfBytes) {
-                try {
-                    let boxView = new DataView(boxInfBytes);
-                    let boxSize = boxView.getUint32(0);
-                    let boxName = String.fromCharCode(boxView.getUint8(4)) + String.fromCharCode(boxView.getUint8(5)) + String.fromCharCode(boxView.getUint8(6)) + String.fromCharCode(boxView.getUint8(7));
+    // Create an in memory mp4 file
 
-                    var findBox = this.boxes.find(function (name) {
-                        return name.trim() === boxName.trim();
-                    });
+    // Declare object variables that represent the boxes.
+    var trakBoxObj;
+    var moofBoxObj;
+    var trafBoxObj;
+    var trunBoxObj;
+    var tfhdBoxObj;
+    var tfdtBoxObj;
+    var mfhdBoxObj;
+    var mvexBoxObj;
+    var trexBoxObj;
+    var mehdBoxObj;
+    var mvhdBoxObj;
+    var sttsBoxObj;
+    var stcoBoxObj;
+    var mdiaBoxObj;
+    var minfBoxObj;
+    var stblBoxObj;
+    var cttsBoxObj;
+    var stsdBoxObj;
+    var moovBoxObj;
+    var ftypBoxObj;
+    var sidxBoxObj;
+    var tkhdBoxObj;
+    var iodsBoxObj;
+    var mdhdBoxObj;
+    var hdlrBoxObj;
+    var vmhdBoxObj;
+    var dinfBoxObj;
+    var stszBoxObj;
 
-                    var objBoxInf = {
-                        size: boxSize, name: boxName, boxValid: true
-                    };
+    // The FullBox where all the boxes of the file inherit from.
+    function FullBox(length, typeName) {
+        this.length = length;
+        this.typeName = typeName;
+    }
+    // FTYP Box
+    function FtypBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.major_brand = "";
+        this.minor_version = 0;
+        this.compatible_brands = [];
+    }
+    // ftyp inherit from Fullbox
+    FtypBox.prototype = new FullBox();
+    
+    // TRAK
+    function TrakBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
 
-                    if (findBox === null || findBox === undefined) {
-                        objBoxInf.boxValid = false;
-                        console.log("Unknown box " + boxName);
-                    }
-                    return objBoxInf;
-                } catch (e) {
-                    console.log("Error on the getInf method");
+        this.tkhd = tkhdBoxObj;
+        this.mdia = mdiaBoxObj;
+        this.iods = iodsBoxObj;
+    }
+    // trak inherit from FullBox
+    TrakBox.prototype = new FullBox();
+
+    // MDAT
+    var mdatBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+    }
+    // mdatBox inherit from fullBox
+    mdatBox.prototype = new FullBox();
+
+    // MOOV
+    function MoovBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.mvex = mvexBoxObj;
+        this.trex = [];
+        this.trak = [];
+        this.mvhd = mvhdBoxObj;
+    }
+    // moov inherit from fullBox
+    MoovBox.prototype = new FullBox();
+    
+    // moof
+    var moofBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.mfhd = mfhdBoxObj;
+        this.trafs = [];
+    }
+    // moofBox inherit from FullBox
+    moofBox.prototype = new FullBox();
+
+    // TRAF
+    function TrafBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.tfdt = tfdtBoxObj;
+        this.tfhd = tfhdBoxObj;
+        this.trun = [];
+    }
+    // traf box inherit FullBox
+    TrafBox.prototype = new FullBox();
+
+    // tfhd 
+    function TfhdBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.trackId = 0;
+    }
+    // tfhd box inherit FullBox
+    TfhdBox.prototype = new FullBox();
+
+    // trun
+    function TrunBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.tr_flags = 0;
+        this.sample_count = 0;
+        this.data_offset = 0;
+        this.first_sample_flags = 0;
+        this.sample_duration = 0;
+        this.composite_time_offset = 0;
+    }
+    // trun box inherit FullBox
+    TrunBox.prototype = new FullBox();
+
+    // MFHD
+    function MfhdBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.sequence_number = 0;
+    }
+    // mfhd box inherit FullBox
+    MfhdBox.prototype = new FullBox();
+    
+    // SIDX
+    function SidxBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.version = 0;
+        this.referenceCount = 0;
+        this.reserved = 0;
+        this.earliestPresentation = 0;
+        this.referenceId = 0;
+        this.timescale = 0;
+        this.entry_count = [];
+    }
+    // sidx inherit from FullBox
+    SidxBox.prototype = new FullBox();
+
+    // MVEX
+    function MvexBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.mehd = mehdBoxObj;
+        this.trex = [];
+    }
+    // mvex box inherit from FullBox
+    MvexBox.prototype = new FullBox();
+
+    // TREX
+    function TrexBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        
+        this.trackID = 0;
+        this.default_sample_description_index = 0;
+        this.default_sample_duration = 0;
+        this.default_sample_size = 0;
+        this.default_sample_flags = 0;
+    }
+    // trex box inherit from FullBox
+    TrexBox.prototype = new FullBox();
+
+    // TKHD
+    function TkhdBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.version = 0;
+        this.creation_time = 0;
+        this.modification_time = 0;
+        this.track_Id = 0;
+        this.reserved = 0;
+        this.duration = 0;
+        this.layer = 0;
+        this.alternate_group = 0;
+        this.volume = 0;
+        this.matrix = [0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000];
+        this.width = 0;
+        this.height = 0;
+    }
+    // tkhdbox inherit FullBox
+    TkhdBox.prototype = new FullBox();
+
+    // MDIA
+    function MdiaBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.mdhd = mdhdBoxObj;
+        this.minf = minfBoxObj;
+        this.hdlr = hdlrBoxObj;
+    }
+    // MdiaBox inherit FullBox
+    MdiaBox.prototype = new FullBox();
+
+    // IODS
+    var iodsBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+    }
+    // iodsbox inherit FullBox
+    iodsBox.prototype = new FullBox();
+
+    // MDHD
+    function MdhdBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.version = 0;
+        this.creation_time = 0;
+        this.modification_time = 0;
+        this.timescale = 0;
+        this.duration = 0;
+        this.pad = 0;
+        this.language = 0;
+        this.pre_defined = 0;
+    }
+    // mdhdBox inherit FullBox
+    MdhdBox.prototype = new FullBox();
+
+    // MINF
+    function MinfBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.vmhd = vmhdBoxObj;
+        this.dinf = dinfBoxObj;
+        this.stbl = stblBoxObj;
+    }
+    // minf inherit FullBox
+    MinfBox.prototype = new FullBox();
+
+    // HDLR
+    function HdlrBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.pre_defined = 0;
+        this.handler_type = 0;
+        this.reserved = [];
+        this.name = "";
+    }
+    // hdlrBox inherit FullBox
+    HdlrBox.prototype = new FullBox();
+
+    // VMHD
+    function VmhdBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+    }
+    // vmhdBox inherit FullBox
+    VmhdBox.prototype = new FullBox();
+
+    // DINF
+    function DinfBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.dref = drefBoxObj;
+    }
+    // dinfBox inherit FullBox
+    DinfBox.prototype = new FullBox();
+
+    // STBL
+    function StblBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+
+        this.stsd = stsdBoxObj;
+        this.stts = sttsBoxObj;
+        this.stsz = stszBoxObj;
+        this.stco = stcoBoxObj;
+        this.ctts = cttsBoxObj;
+    }
+    // StblBox inherit FullBox
+    StblBox.prototype = new FullBox();
+
+    // DREF
+    var drefBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+    }
+    // drefBox inherit FullBox
+    drefBox.prototype = new FullBox();
+
+    // STSD
+    function StsdBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.entry_count = 0;
+        this.entries = [];
+
+        // Add a method to the StsdBox prototype.
+        StsdBox.prototype.create_entries_table = function (stsdBox) {
+            var stsdView = new DataView(stsdBox);
+
+            this.entry_count = stsdView.getUint32(12);
+            let byteOffset = 16;
+
+            for (var i = 0; i < this.entry_count; i++) {
+                let sample_size = stsdView.getUint32(byteOffset);
+                byteOffset += 4;
+                let data_format = "";
+                for (var charIndex = 0; charIndex < 4; charIndex++) {
+                    data_format += String.fromCharCode(stsdView.getUint8(byteOffset + charIndex));
                 }
-            },
-            isAppendable: function (seg) {
-                var boxView = new DataView(seg);
-                var boxesInf = this.getBoxes(seg);
+                byteOffset += 4;
+                let reference_index = stsdView.getUint16(byteOffset);
+                byteOffset += 2;
 
-                // console.log("byteLength = " + boxView.byteLength + " boxesLength = " + boxLength);
-                if (!boxesInf.validSeg) {
-                    console.log("This segment is Invalid");
-                    console.log("byteLength = " + boxView.byteLength + " boxesLength = " + boxLength);
-                    return false;
+                this.entries.push({ sample_size: sample_size, data_format: data_format, reference_index: reference_index });
+            }
+        }
+    }    
+    // stsdBox inherit FullBox
+    StsdBox.prototype = new FullBox();
+
+    // STTS
+    function SttsBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.entry_count = 0;
+        this.entries = [];    
+
+        // Add the method to the prototype of SttsBox
+        SttsBox.prototype.create_entries_table = function (sttsBox) {
+            var sttsView = new DataView(sttsBox);
+            // console.log("Length = " + sttsView.byteLength);
+            this.entry_count = sttsView.getUint32(12);
+            var byteOffset = 16;
+
+            let typeName = "";
+            for (var i = 0; i < 4; i++) {
+                typeName += String.fromCharCode(sttsView.getInt8(4 + i));
+            }
+            
+            // console.log("SampleCount\tSampleDelta" + " EntryCount = " + this.entry_count);
+            for (var i = 0; i < this.entry_count; i++) {
+                let sample_count = sttsView.getUint32(byteOffset);
+                byteOffset += 4;
+                let sample_delta = sttsView.getUint32(byteOffset);
+                byteOffset += 4;
+                this.entries.push({
+                    sample_count: sample_count,
+                    sample_delta: sample_delta
+                });
+                console.log(this.entries[i].sample_count + "\t" + this.entries[i].sample_delta);
+            }
+            return this.entry_count;
+        }
+    };
+    
+    // SttsBox inherit FullBox
+    SttsBox.prototype = new FullBox();
+    SttsBox.prototype.constructor = SttsBox;
+
+    // STCO box
+    function StcoBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.entry_count = 0;
+        this.chunk_offsets = [];
+
+        // Process the stcoBox (get out the offsets);
+        StcoBox.prototype.processOffsets = function (stcoBox) {
+            var stcoView = new DataView(stcoBox);
+            var byteOffset = 12;
+
+            this.entry_count = stcoView.getUint32(byteOffset);
+            // console.log("Offsets: EntryCount = " + (this.entry_count));
+            for (var i = 0; i < this.entry_count; i++) {
+                byteOffset += 4;
+                this.chunk_offsets.push(stcoView.getUint32(byteOffset));
+                console.log(this.chunk_offsets[i]);
+            }
+        }       
+    }    
+    // StcoBox inherit FullBox.
+    StcoBox.prototype = new FullBox();
+    StcoBox.prototype.constructor = StcoBox;
+
+    // STSS box
+    function StssBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.entry_count = 0;
+        this.sample_numbers = [];
+
+        StssBox.prototype.get_sample_numbers = function (stssBox) {
+            let stssView = new DataView(stssBox);
+            this.entry_count = stssView.getUint32(12);
+            let byteOffset = 16;
+            for (var i = 0; i < this.entry_count; i++) {
+                this.sample_numbers.push(stssView.getUint32(byteOffset));
+                byteOffset += 4;
+            }
+        }
+    }
+    // StssBox inherit from FullBox
+    StssBox.prototype = new FullBox();
+
+    // STSZ
+    function StszBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.sample_count = 0;
+        this.sample_size = 0;
+        this.entry_size_table = [];        
+    }
+    // Add the method to the StszBox
+    StszBox.prototype.create_size_table = function (stszBox) {
+        let stszView = new DataView(stszBox);
+        let byteOffset = 12;
+        this.sample_size = stszView.getUint32(byteOffset);
+        byteOffset += 4;
+        this.sample_count = stszView.getUint32(byteOffset);
+        byteOffset += 4;
+
+        if (this.sample_size === 0) {
+            for (var i = 0; i < this.sample_count; i++) {
+                this.entry_size_table.push(stszView.getUint32(byteOffset));
+                byteOffset = i + 1 === this.sample_count ? byteOffset + 4 : byteOffset;
+            }
+        }
+    }
+    // stszBox inherit FullBox
+    StszBox.prototype = new FullBox();
+
+    // STZ2 box
+    function Stz2Box(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.sample_count = 0;
+        this.sample_size = 0;
+        this.entry_size_table = [];
+
+        Stz2Box.prototype.create_size_table = function (stz2Box) {
+            let stz2View = new DataView(stz2Box);
+            let byteOffset = 12;
+            this.sample_size = stszView.getUint32(byteOffset);
+            byteOffset += 4;
+            this.sample_count = stszView.getUint32(byteOffset);
+            byteOffset += 4;
+
+            if (this.sample_size === 0) {
+                for (var i = 0; i < this.sample_count; i++) {
+                    this.entry_size_table.push(stz2View.getUint32(byteOffset) + stz2View.getUint32(byteOffset + 4));
+                    byteOffset = i + 1 === this.sample_count ? byteOffset + 8 : byteOffset;
                 }
-                fileContent.getConformence(seg);
-                return true;
-            },
-            Mp4Structure: {
-                initSeg:  {
-                    objboxes: [],
-                    content: null,
-                },
-                free: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
+            }
+        }
+    }
+    // Stz2Box inherit from FullBox
+    Stz2Box.prototype = new FullBox();
 
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
+    // TFDT box
+    var tfdtBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.baseMediaDecodeTime = 0;
+    }
+    // tfdtBox inherit from FullBox
+    tfdtBox.prototype = new FullBox();
 
-                    // console.log("====== free printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== free end printing ======");
-                },
-                ftyp: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
+    // MFHD box
+    var mfhdBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.sequence_number = 0;
+    }
+    // mfhdBox inherit from FullBox
+    mfhdBox.prototype = new FullBox();
 
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
+    // MEHD box
+    var mehdBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.fragment_duration = 0;
+    }
+    // MVHD box
+    var mvhdBox = function (length, typeName) {
+        FullBox.apply(this, [length, typeName]);
+        this.creation_time = 0;
+        this.modification_time = 0;
+        this.timescale = 0;
+        this.duration = 0;
 
-                    // console.log("====== ftyp printing ======");
-                    // console.log("box Name = " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== ftyp end printing ======");
+        this.rate = 0x00010000; // typically 1.0
+        this.volume = 0x0100; // typically, full volume
+        this.reserved = 0;
+        this.matrix = [0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000]; // Unity matrix
+        this.pre_defined = [];
+        this.next_trackId = 0;
+    }
+    // mvhdBox inherit from FullBox
+    mvhdBox.prototype = new FullBox();
 
-                    // create a view for the ftype box
-                    let ftypView = new DataView(box, 0, boxSize);
-                    let major_brand = String.fromCharCode(ftypView.getInt8(8)) + String.fromCharCode(ftypView.getInt8(9)) + String.fromCharCode(ftypView.getInt8(10)) + String.fromCharCode(ftypView.getInt8(11));
-                    let minor_version = ftypView.getInt32(13);
+    // CTTS box
+    function CttsBox(length, typeName) {
+        FullBox.apply(this, [length, typeName]);
 
-                    let com_brands = String.fromCharCode(ftypView.getInt8(16)) +
-                        String.fromCharCode(ftypView.getInt8(17)) + String.fromCharCode(ftypView.getInt8(18)) +
-                        String.fromCharCode(ftypView.getInt8(19)) + ";";
+        this.entry_count = 0;
+        this.entries = [];
 
-                    com_brands += String.fromCharCode(ftypView.getInt8(20)) + String.fromCharCode(ftypView.getInt8(21)) +
-                        String.fromCharCode(ftypView.getInt8(22)) + String.fromCharCode(ftypView.getInt8(23)) + ";";
-                    com_brands += String.fromCharCode(ftypView.getInt8(24)) + String.fromCharCode(ftypView.getInt8(25)) +
-                        String.fromCharCode(ftypView.getInt8(26)) + String.fromCharCode(ftypView.getInt8(27)) + ";";
-                    com_brands += String.fromCharCode(ftypView.getInt8(28)) + String.fromCharCode(ftypView.getInt8(29)) +
-                        String.fromCharCode(ftypView.getInt8(30)) + String.fromCharCode(ftypView.getInt8(31));
+        // Add a method to the prototype of CttsBox
+        CttsBox.prototype.create_entries_table = function (cttsBox) {
+            let cttsView = new DataView(cttsBox);
+            this.entry_count = cttsView.getUint32(12);
+            let byteOffset = 16;
+            for (var i = 0; i < this.entry_count; i++) {
+                let sample_count = cttsView.getUint32(byteOffset);
+                byteOffset += 4;
+                let sample_offset = cttsView.getUint32(byteOffset);
+                byteOffset += 4;
+                this.entries.push({ sample_count: sample_count, sample_offset: sample_offset });
+            }
+        }
+    }
+    // CTTS box End
 
-                    // console.log("major_brand = " + major_brand + "\nminor_version = " + minor_version + "\ncompatible_brands = " + com_brands);
-                },
-                mvhd: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
+    // VideoPlayer
+    function VideoPlayer() {
+        var player = vidplayer;
+        this.initialized = false;
+        this.duration = 0;
+        this.waiting = false;
+        this.playing = false;
 
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
+        // on duration loaded
+        
+        VideoPlayer.prototype.AddEventListeners = function () {
+            vidplayer.ondurationchange = function () {
+                if (duration <= 0) {
+                    duration = mvideo.duration + mvideo.adsDurations;
+                    parentWindow.getRelated(descvalue, videoId, false);
+                    parentWindow.getRelatedVidInf(videoId);
+                    parentWindow.getComments(1, videoId, 1);
 
-                    // console.log("====== mvhd printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== mvhd end printing ======");
-                },
-                trak: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== trak printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== trak end printing ======");
-                },
-                moov: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== moov printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== moov end printing ======");
-
-                    let children = children(box);
-
-                    // console.log("moov children\n===================================");
-                    for (var i = 0; i < children.length; i++) {
-                        let nextChild = children[i];
-                        let fun = this[nextChild.name];
-                        fun(box.slice(nextChild.offset, nextChild.size + nextChild.offset));
-
-                        // console.log("Box Name: " + nextChild.name + "\nBox Size: " + nextChild.size, "\nOffset: " + nextChild.offset);
+                    // This code would be here temporarily.
+                    var xmlRequest = new XMLHttpRequest();
+                    xmlRequest.open("GET", "/video/getviews?videoId=" + document.getElementById("videoId").getAttribute("value"));
+                    xmlRequest.onload = function (e) {
+                        if (this.status === 200) {
+                            // alert("View Counted!");
+                        }
                     }
-                    // console.log("moov children Ends\n===============================");
-                },
-                sidx: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-                    let sidxView = new DataView(box);
+                    xmlRequest.send();
+                }
 
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
+                var width = $(vidplayer).innerWidth();
+                var height = $(vidplayer).innerHeight();
+                var ctrls_con = document.getElementById("ctrls-con");
+                totalwidth = ctrls_con.clientWidth;
+                var controls = $(".controls-container").innerWidth();
 
-                    // console.log("====== sidx printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== sidx end printing ======");
-
-                    // console.log("Timescale in sidx = " +
-                    //    sidxView.getUint32(16) + " version = " +
-                    //    sidxView.getUint32(8) + " ReferenceId = " +
-                    //    sidxView.getUint32(12));
-
-                    let segInfo = {
-                        version: sidxView.getUint32(8),
-                        referenceId: sidxView.getUint32(12),
-                        timescale: sidxView.getUint32(16),
-                        ept: (sidxView.getUint32(8) === 0 ? sidxView.getUint32(20) : (sidxView.getUint32(20) + sidxView.getUint32(24))) / sidxView.getUint32(16),
-                        offset: sidxView.getUint32(8) === 0 ? sidxView.getUint32(24) : (sidxView.getUint32(28) + sidxView.getUint32(32)),
-                        reserved: sidxView.getUint32(8) === 0 ? sidxView.getInt16(28) : (sidxView.getUint16(36)),
-                        reference_count: sidxView.getUint32(8) === 0 ? sidxView.getInt16(30) : (sidxView.getInt16(38)),
-                        entryCount: []
-                    };
-
-                    let subSegInf = {
-                        reference_type: 0,
-                        reference_size: 0,
-                        sub_seg_duration: 0,
-                        starts_with_SAP: 0,
-                        contains_sap: 0,
-                        sap_delta_time: 0
-                    };
-
-                    let _1stSubseg_index = sidxView.getUint32(8) === 0 ? 32 : 40;
-
-                    // console.log("reference_count: " + segInfo.reference_count);
-                    for (var i = 0; i < segInfo.reference_count; i++) {
-                        subSegInf.reference_size = sidxView.getUint32(_1stSubseg_index);
-                        subSegInf.reference_type = sidxView.reference_size >>> 31;
-                        subSegInf.reference_size = subSegInf.reference_size & 0x7fffffff;
-                        subSegInf.sub_seg_duration = sidxView.getUint32(_1stSubseg_index + 4) / segInfo.timescale;
-                        subSegInf.starts_with_SAP = ((sidxView.getUint32(_1stSubseg_index + 8)) >>> 31);
-                        subSegInf.contains_sap = (sidxView.getUint32(_1stSubseg_index + 8) << 1) >>> 28;
-                        subSegInf.sap_delta_time = (((sidxView.getUint32(_1stSubseg_index + 8)) << 1) << 3) / segInfo.timescale;
-
-                        segInfo.entryCount.push(subSegInf);
-
-                        // console.log("Current Subsegment duration: " + subSegInf.sub_seg_duration + " sap: " +
-                        //    subSegInf.contains_sap + " reference_type: " + subSegInf.reference_type + " sap_delta_time: " + subSegInf.sap_delta_time +
-                        //    " ept: " + segInfo.ept + " referenceId: " + segInfo.referenceId + " starts_with_SAP: " + subSegInf.starts_with_SAP);
-
-                        _1stSubseg_index += 8;
+                $(ads).each(function (_index, ad) {
+                    if ((ad.start >= vidplayer.currentTime) && !ad.isplaying) {
+                        $(".ad-cntrls").css({
+                            "display": "inline-block"
+                        });
+                        $(".ctrls-main-con").css({
+                            "display": "none"
+                        });
+                        ad.isplaying = true;
                     }
-                    return segInfo;
-                },
-                moof: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
+                });
+                // console.log("Durration Changed! " + duration);
+                displayTime();
+                parentWindow.domContentLoaded();
+                VideoPlayer.prototype.durationchanged();
+            }
 
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
+            // add the on error event listener.
+            vidplayer.addEventListener("error", function (e) {
+                console.log("VideoElement Error: " + vidplayer.error.code + "; " + vidplayer.error.message);
+            });
+        }
+        VideoPlayer.prototype.durationchanged = function () {
+            console.log("Player Initialized");
+            this.initialized = true;            
+        }
+        VideoPlayer.prototype.waiting = function () {
+            this.playing = false;
+        }
+        VideoPlayer.prototype.error = function (error) {
+            console.log("VideoElement Error: " + vidplayer.error.code + "; " + vidplayer.error.message);
+        }
+        VideoPlayer.prototype.player = function () {
+            return player;
+        }
+    }
+    var videoPlayer = new VideoPlayer();
 
-                    // console.log("====== moof printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== moof end printing ======");
+    // Mp4 file
+    function ISOMp4File() {
+        this.sidx = [];
+        this.ftyp = ftypBoxObj;
+        this.moof = [];
+        this.moov = moovBoxObj;
+        this.mfra = [];
+        this.free = [];
+        this.skip = [];
+    }
+    // Create an object of the ISOMp4File object
+    var objIsoMp4File = new ISOMp4File(); 
 
-                    let children = children(box);
+    // Current File Streaming.
+    function FileDetails() {
+        this.mediaFile = null;
+        this.mfileView = null;
+        this.segmentUrls = [];
 
-                    //console.log("moof children\n===================================");
-                    for (var i = 0; i < children.length; i++) {
-                        let nextChild = children[i];
+        this.byteOffset = 0;
+        this.isinit = false;
+        this.boxes = ["sidx", "moov", "free", "mdat", "ftyp", "tref", "trak", "pdin", "mvhd", "tkhd",
+            "edts", "elst", "mdia", "mdhd", "hdlr", "minf", "vmhd", "smhd", "hmhd", "nmhd",
+            "dinf", "dref", "stbl", "stsd", "stts", "ctts", "stsc", "stsz", "stz2", "stco",
+            "co64", "stss", "stsh", "padb", "stdp", "sdtp", "sbgp", "sgpd", "subs", "trep",
+            "mvex", "mehd", "trex", "ipmc", "moof", "mfhd", "traf", "tfhd", "trun",
+            "sdtp", "sbgp", "subs", "mfra", "tfra", "mfro", "mdat", "free", "skip", "iods",
+            "udta", "cprt", "meta", "hdlr", "dinf", "dref", "iloc", "ipro", "tfdt",
+            "sinf", "frma", "imif", "schm", "schi", "iinf", "xml ", "bxml", "pitm"];
 
-                        let fun = this[nextChild.name];
-                        fun(box.slice(nextChild.offset, nextChild.size + nextChild.offset));
-                    }
-                    // console.log("moof children Ends\n===============================");
-                },
-                traf: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
+        this.mpdFile = "";
+        FileDetails.prototype.mergeSeg = function (segment) {
+            try {                
+                var segView = new DataView(segment);
+                for (var i = 0; i < segView.byteLength; i++) {
+                    this.mfileView.setInt8(this.byteOffset, segView.getInt8(i));
+                    this.byteOffset += 1;
+                }
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("General Error");
+                }
+                if (e instanceof RangeError) {
+                    console.log("Range Error");
+                }
+            }
+        }
+        FileDetails.prototype.getboxInf = function (boxInfBytes) {
+            try {
+                let boxView = new DataView(boxInfBytes);
+                let boxSize = boxView.getUint32(0);
+                let boxName = String.fromCharCode(boxView.getUint8(4)) + String.fromCharCode(boxView.getUint8(5)) + String.fromCharCode(boxView.getUint8(6)) + String.fromCharCode(boxView.getUint8(7));
 
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== traf printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== traf end printing ======");
-
-                    let children = children(box);
-
-                    //console.log("traf children\n========================================");
-                    for (var i = 0; i < children.length; i++) {
-                        let nextChild = children[i];
-
-                        let fun = this[nextChild.name];
-                        fun(box.slice(nextChild.offset, nextChild.size + nextChild.offset));
-                    }
-                    // console.log("traf children End\n=====================================");
-                },
-                tfhd: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    //console.log("====== tfhd printing ======");
-                    //console.log("boxName: " + boxName);
-                    //console.log("boxSize: " + boxSize);
-                    //console.log("====== tfhd end printing ======");
-
-                    let boxView = new DataView(box);
-
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("TrackId: " + boxView.getInt32(12), "\ttf_flags: " + (boxView.getInt32(8)));
-
-                    return { trackId: boxView.getInt32(12) }
-                },
-                tfdt: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== tfdt printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== tfdt end printing ======");
-
-                    let boxView = new DataView(box);
-                    return { baseMediaDecodeTime: boxView.getInt32(12) }
-                },
-                sbgp: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== sbgp printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== sbgp end printing ======");
-                },
-                trun: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-                    let trunBoxView = new DataView(box);
-
-                    let byteIndex = 12;
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                     console.log("====== trun printing ======");
-                     console.log("boxName: " + boxName);
-                     console.log("boxSize: " + boxSize);
-                     console.log("====== trun end printing ======");         
-
-                    var trunObj = {
-                        tr_flags: trunBoxView.getUint32(8),
-                        sample_count: trunBoxView.getUint32(12),
-                        data_offset: 0,
-                        first_sample_flags: 0,
-                        sample_duration: 0,
-                        composite_time_offset: 0
-                    }; 
-
-                    byteIndex += (((trunBoxView.getUint32(8) & 0x000001) === 0x000001) ? 4 : 0);
-                    trunObj.data_offset = (((trunBoxView.getUint32(8) & 0x000001) === 0x000001) ? trunBoxView.getUint32(byteIndex) : 0);
-                    byteIndex += (((trunBoxView.getUint32(8) & 0x000004) === 0x000004) ? 4 : 0);
-                    trunObj.first_sample_flags = (((trunBoxView.getUint32(8) & 0x000004) === 0x000004) ? trunBoxView.getUint32(byteIndex) : 0);
-                    byteIndex += (((trunBoxView.getUint32(8) & 0x000100) === 0x000100) ? 4 : 0);
-                    trunObj.sample_duration = (((trunBoxView.getUint32(8) & 0x000100) === 0x000100) ? trunBoxView.getUint32(byteIndex) : 0);
-                    byteIndex += (((trunBoxView.getUint32(8) & 0x000800) === 0x000800) ? 4 : 0);
-                    trunObj.composite_time_offset = (((trunBoxView.getUint32(8) & 0x000800) === 0x000800) ? trunBoxView.getUint32(byteIndex) : 0);
-
-                    // console.log("Is the Composition Time Available? " + ((trunBoxView.getUint32(8) & 0x000800) === 0x000800));
-                    // console.log("tr_flags: " + (trunBoxView.getUint32(8)) + "\nsample_count: " + (trunBoxView.getUint32(12)) + 
-                    //    "\ndata_offset: " + trunObj.data_offset +
-                    //    "\nfirst_sample_flags: " + trunObj.first_sample_flags)
-                    //    + "\nsample_duration: " + trunObj.sample_duration
-                    //    + "\ncomposite_time_offset: " + trunObj.composite_time_offset;
-
-                    // console.log("================== Start Printing Details ================================");
-                    // console.log("tr_flags: " + (trunObj.tr_flags) + "\tdata_offset: " +
-                    //    trunObj.data_offset + "\tfirst_sample_flags: " +
-                    //    trunObj.first_sample_flags +
-                    //    "\tsample_duration: " + trunObj.sample_duration + "\tsample_count: " +
-                    //    trunObj.sample_count);
-                    // console.log("=================== End Printing Details ==================================");
-
-                    return trunObj;
-                },
-                mfhd: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== mfhd printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("====== mfhd end printing ======");
-
-                    let mfhdView = new DataView(box.slice(12, boxSize));
-                    let sequence_number = mfhdView.getFloat32(0);
-
-                    // console.log("sequence_number: " + sequence_number);
-                    return { sequence_number: sequence_number };
-                },
-                mvex: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== mvex printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== mvex end printing ======");
-
-                    let children = this.children(box);
-
-                    // console.log("Children of mvex box\n======================================");
-                    for (var i = 0; i < children.length; i++) {
-                        let nextChild = children[i];
-
-                        let fun = this[nextChild.name];
-                        fun(box.slice(nextChild.offset, nextChild.size + nextChild.offset));
-                    }
-                    // console.log("Children of mvex box\n======================================");
-                },
-                trex: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== trex printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== trex end printing ======");
-
-                    let trexView = new DataView(box);
-
-                    // console.log("trackID: " + trexView.getUint32(12) + "\tdefault_sample_description_index: " + trexView.getUint32(16) +
-                    //    "\tdefault_sample_duration: " + trexView.getUint32(20) + "\tdefault_sample_size: " + trexView.getUint32(24) +
-                    //    "\tdefault_sample_flags: " + (trexView.getUint32(28) & 0x000020));
-
-                    return {
-                        trackID: trexView.getUint32(12),
-                        default_sample_description_index: trexView.getUint32(16),
-                        default_sample_duration: trexView.getUint32(20),
-                        default_sample_size: trexView.getUint32(24),
-                        default_sample_flags: trexView.getUint32(28)
-                    };
-                },
-                mehd: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== mehd printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== mehd end printing ======");
-
-                    let mehdView = new DataView(box);
-
-                    // console.log("Fragment duration: " + mehdView.getUint32(8));
-                    return {
-                        fragment_duration: mehdView.getUint32(8)
-                    }
-                },
-                mvhd: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== mvhd printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== mvhd end printing ======");
-                },
-                mdat: function (box) {
-                    let boxInf = fileContent.processSeg.getboxInf(box.slice(0, 8));
-
-                    let boxSize = boxInf.size;
-                    let boxName = boxInf.name;
-
-                    // console.log("====== mdat printing ======");
-                    // console.log("boxName: " + boxName);
-                    // console.log("boxSize: " + boxSize);
-                    // console.log("====== mdat end printing ======");
-                },
-            },
-            getAllboxes: function (segment) {
-                let arrayInts = new Uint8Array(segment);
-                let objboxes = { isvalid: true, boxes: [] };
-
-                let boxOffset = 0;
+                var findBox = this.boxes.find(function (name) {
+                    return name.trim() === boxName.trim();
+                });
+                var objBoxInf = {
+                    size: boxSize, name: boxName, boxValid: true
+                };
+                if (findBox === null || findBox === undefined) {
+                    objBoxInf.boxValid = false;
+                    console.log("Unknown box " + boxName);
+                }
+                return objBoxInf;
+            } catch (e) {
+                console.log("Error on the getInf method");
+            }
+        }
+        // create a segment that conforms to the dash standard.
+        FileDetails.prototype.createIsoMp4 = function (segment) {
+            let arrayInts = new Uint8Array(segment);
+            this.isConforming = false;
+            let boxOffset = 0;
+            objIsoMp4File = new ISOMp4File();
+            try {
                 do {
-                    let boxInf = fileContent.processSeg.getboxInfo(segment.slice(boxOffset, boxOffset + 8));
-
+                    let boxInf = this.getboxInf(segment.slice(boxOffset, boxOffset + 8));
+                    // console.log("Box Name: " + boxInf.name + " Box Offset: " + boxOffset);
                     if (boxInf.boxValid) {
                         let boxSize = boxInf.size;
                         let boxName = boxInf.name;
+                        let objbox = { name: boxName, size: boxSize, offset: boxOffset };
 
-                        console.log("boxName: " + boxName + " boxSize: " + boxSize);
-                        objboxes.boxes.push({ name: boxName, size: boxSize, offset: boxOffset });
-                        boxOffset += boxSize;
-                    } else {
-                        console.log("Invalid box found");
-                        objboxes.isvalid = false;
-                        break;
-                    }
-                } while (boxOffset < arrayInts.length);
-                return objboxes;
-            },
-            getboxInfo: function (bytes) {
-                try {
-                    let boxView = new DataView(bytes);
-                    let boxSize = boxView.getUint32(0);
-                    let boxName = String.fromCharCode(boxView.getUint8(4)) + String.fromCharCode(boxView.getUint8(5)) + String.fromCharCode(boxView.getUint8(6)) + String.fromCharCode(boxView.getUint8(7));
-                    let regexExp = /[^A-Za-z0-9]/;
-
-                    var findBox = fileContent.processSeg.boxes.find(function (name) {
-                        return name.trim() === boxName.trim();
-                    });
-
-                    var objBoxInf = {
-                        size: boxSize, name: boxName, boxValid: true
-                    };
-
-                    if (findBox === null || findBox === undefined) {
-                        if (regexExp.test(objBoxInf.name)) {                                                        
-                            console.log("The box may be valid but not on the list of box names: " +
-                                objBoxInf.name + " boxSize = " + objBoxInf.size);
-                            fileContent.segmentsInf.isProcessing = false;
-                            fileContent.segmentsInf.loading = false;
-                        } else {
-                            objBoxInf.boxValid = false;
-                            console.log("Invalid box " + boxName);
+                        if (boxName === "ftyp") {
+                            // console.log("Ftype Found");
+                            FileDetails.prototype.ftyp(segment.slice(objbox.offset, objbox.offset + objbox.size));
+                            objIsoMp4File.ftyp = ftypBoxObj;
                         }
+                        if (boxName === "sidx") {
+                            // console.log("Sidx Found");
+                            FileDetails.prototype.sidx(segment.slice(objbox.offset, objbox.offset + objbox.size));
+                            objIsoMp4File.sidx.push(sidxBoxObj);
+                        }
+                        if (boxName === "moof") {
+                            // console.log("moof Found");
+                            FileDetails.prototype.moof(segment.slice(objbox.offset, objbox.offset + objbox.size));
+                            objIsoMp4File.moof.push(moofBoxObj);
+                        }
+                        if (boxName === "moov") {
+                            // console.log("moov Found");
+                            FileDetails.prototype.moov(segment.slice(objbox.offset, objbox.offset + objbox.size));
+                            objIsoMp4File.moov = moovBoxObj;
+                        }
+                        boxOffset += boxSize;
                     }
-                    return objBoxInf;
-                } catch (e) {
-                    console.log("Error on the getInf method");
+                } while (boxOffset < arrayInts.byteLength);
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("An Error during the conformence check.");
+                    console.log("ErrorName: " + e.name + "Message: " + "Stack: " + e.stack);
                 }
-            },
-            getboxChildren: function (box) {
-                let childboxSize = 0;
-                let childboxOffset = 8;
-                let boxView = new DataView(box);
-
-                let currentBoxLength = boxView.getInt32(0);
-                let objboxCollection = { isvalid: true, boxCollection: [] };
-
-                do {
-                    let boxInf = this.getboxInf(box.slice(childboxOffset, childboxOffset + 8));
-                    if (boxInf.boxValid) {
-                        let childboxName = boxInf.name;
-                        childboxSize = boxInf.size;
-                        objboxCollection.boxCollection.push({ size: childboxSize, name: childboxName, offset: childboxOffset });
-                        childboxOffset += childboxSize;
-                    } else {
-                        objboxCollection.isvalid = false;
-                        console.log("The segment may be incorrect");
-                        break;
+            }
+        }
+        // check if the segment conforms to the dash standard.
+        FileDetails.prototype.getConformence = function (segment) {
+            let contentComponent = this.mpdFile.querySelector("ContentComponent[contentType='video']");
+            let contentId = contentComponent.getAttribute("id");
+            let objsampleEPT = { ept: 0, isinit: false, trackId: parseInt(contentId), isConforming: false };
+            try {
+                // console.log("Count Moofs = " + objIsoMp4File.moof.length);
+                objIsoMp4File.moof.forEach(function (_moof) {
+                    // console.log("Trafs Count = " + _moof.trafs.length);
+                    var traf = _moof.trafs.find(function (_traf) {
+                        // console.log("TfhdId = " + _traf.tfhd.trackId);
+                        return parseInt(_traf.tfhd.trackId) === objsampleEPT.trackId;
+                    });
+                    if (traf === undefined || traf === null) {
+                        console.log("trafs cannot be null");
+                        return;
                     }
-                } while (childboxOffset < currentBoxLength);
-                return objboxCollection;
-            },
-            getFirstSample: function (moofbox, sidxbox, initseg) {
-                let validColl = fileContent.processSeg.getboxChildren(moofbox);
-                let children = [];
+                    var trex = objIsoMp4File.moov.mvex.trex.find(function (_trex) {
+                        return parseInt(_trex.trackID) === parseInt(traf.tfhd.trackId);
+                    });
+                    var objsidx = objIsoMp4File.sidx.find(function (_sidx) {
+                        return _sidx.referenceId === traf.tfhd.trackId;
+                    });
+                    if ((objsidx === undefined || objsidx === null)) {
+                        console.log("sidx cannot be null");
+                    }
+                    var timescale = objsidx.timescale;
+                    var decodeTime = traf.tfdt.baseMediaDecodeTime;
 
-                if (validColl.isvalid) {
-                    children = validColl.boxCollection;
+                    // console.log("timescale = " + timescale + " decodeTime = " + decodeTime + " trun.sample_count = " + traf.trun.sample_count + " count truns = " + traf.trun);
+
+                    let ctcontent = { trackId: "", ct: [] };
+                    let smplduration = 0;
+
+                    for (var sampleIndex = 1; sampleIndex <= traf.trun.sample_count; sampleIndex++) {
+                        // Composition Time of the current sample.
+                        let cntSmpCT = (decodeTime / timescale) +
+                            (smplduration += (traf.trun.tr_flags & 0x000004 === 4) ? trex.default_sample_duration / timescale : traf.trun.sample_duration / timescale) +
+                            (traf.trun.composite_time_offset / timescale);
+
+                        // console.log("TrackId: " + traf.tfhd.trackId + " composition time sample " + sampleIndex + " = " + cntSmpCT + ", sample duration = " + smplduration);
+                        ctcontent.ct.push(cntSmpCT);
+                    }
+                    // console.log("Sequency Number: " + _moof.mfhd.sequence_number);
+                    if (_moof.mfhd.sequence_number === 1) {
+                        console.log("Sequency Number: " + _moof.mfhd.sequence_number);
+                        return true;
+                    }
+                });
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+            return true;
+        }
+        //  The Child boxes of the supplied box.
+        FileDetails.prototype.getboxChildren = function (box) {
+            let childboxSize = 0;
+            let childboxOffset = 8;
+            let boxView = new DataView(box);
+
+            let currentBoxLength = boxView.getInt32(0);
+            let objboxCollection = { isvalid: true, boxCollection: [] };
+
+            do {
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(childboxOffset, childboxOffset + 8));
+                if (boxInf.boxValid) {
+                    let childboxName = boxInf.name;
+                    childboxSize = boxInf.size;
+                    objboxCollection.boxCollection.push({ size: childboxSize, name: childboxName, offset: childboxOffset });
+                    childboxOffset += childboxSize;
                 } else {
-                    console.log("Segment corrupted!");
-                    return;
+                    objboxCollection.isvalid = false;
+                    console.log("The segment may be incorrect");
+                    break;
                 }
-                
-                let fun = null;
+            } while (childboxOffset < currentBoxLength);
+            return objboxCollection;
+        }
 
-                let contentComponent = fileContent.mpdFile.querySelector("ContentComponent[contentType='video']");
-                let initialization = fileContent.mpdFile.querySelector("Initialization");
+        // The functions that manipulate the boxes.
+        FileDetails.prototype.free = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
 
-                let contentId = contentComponent.getAttribute("id");
-                let sampleEPT = {
-                    ept: 0, trackId: 0,
-                    lpt: 0, smplduration: 0,
-                    isInit: false,
-                    tr_flags: false,
-                    default_sample_duration: 0,
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+        }
+        FileDetails.prototype.ftyp = function (box) {
+            console.log("FTYP Method Started");
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+            ftypBoxObj = new FtypBox(boxSize, boxName);
+
+            // create a view for the ftype box
+            let ftypView = new DataView(box, 0, boxSize);
+            let major_brand = "";
+
+            let byteOffset = 8;
+            for (var i = 0; i < 4; i++) {
+                major_brand += String.fromCharCode(ftypView.getInt8(byteOffset));
+            }
+            byteOffset += 4;
+
+            let minor_version = ftypView.getInt32(byteOffset);
+            let com_brands = "";
+            byteOffset += 4;
+            let brands_counter = (ftypView.byteLength - byteOffset) / 4;
+            ftypBoxObj.minor_version = minor_version;
+            ftypBoxObj.major_brand = major_brand;
+
+            for (var i = 0; i < brands_counter; i++) {
+                for (var brandIndex = 0; brandIndex < 4; brandIndex++) {
+                    com_brands += String.fromCharCode(ftypView.getInt8(byteOffset));
+                    byteOffset += 1;
+                }
+                ftypBoxObj.compatible_brands.push(com_brands);
+                com_brands = "";
+            }
+            objIsoMp4File.ftyp = ftypBoxObj;
+            // console.log("FTYP Method ENDED");
+            return ftypBoxObj;
+        }
+        FileDetails.prototype.trak = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            trakBoxObj = new TrakBox(boxSize, boxName);
+
+            let children = FileDetails.prototype.getboxChildren(box).boxCollection;
+            var _tkhd = children.find(function (child) {
+                return child.name === "tkhd";
+            });
+            var _mdia = children.find(function (child) {
+                return child.name === "mdia";
+            });
+            var _iods = children.find(function (child) {
+                return child.name === "iods";
+            });
+            trakBoxObj.tkhd = _tkhd !== undefined ? FileDetails.prototype.tkhd(box.slice(_tkhd.offset, _tkhd.offset + _tkhd.size)) : null;
+            trakBoxObj.mdia = _mdia !== undefined ? FileDetails.prototype.mdia(box.slice(_mdia.offset, _mdia.offset + _mdia.size)) : null;
+            trakBoxObj.iods = _iods !== undefined ? FileDetails.prototype.iods(box.slice(_iods.offset, _iods.offset + _iods.size)) : null;
+
+            return trakBoxObj;
+        }
+        FileDetails.prototype.moov = function (box) {
+            try {
+                // console.log("MOOV Method Started");
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+                let children = FileDetails.prototype.getboxChildren(box).boxCollection;
+                let _mvex = children.find(function (child) {
+                    return child.name === "mvex";
+                });
+                let _traks = children.filter(function (child) {
+                    return child.name === "trak";
+                });
+                let _mvhd = children.find(function (child) {
+                    return child.name === "mvhd";
+                });
+                moovBoxObj = new MoovBox(boxSize, boxName);
+                moovBoxObj.mvex = _mvex !== undefined ?
+                    FileDetails.prototype.mvex(box.slice(_mvex.offset, _mvex.offset + _mvex.size)) : null;
+                moovBoxObj.mvhd = _mvhd !== undefined ?
+                    FileDetails.prototype.mvhd(box.slice(_mvhd.offset, _mvhd.offset + _mvhd.size)) : null;
+                for (var i = 0; i < _traks.length; i++) {
+                    moovBoxObj.trak.push(FileDetails.prototype.trak(box.slice(_traks[i].offset, _traks[i].offset + _traks[i].size)));
+                }
+                // console.log("MOOV Method Started");
+                return moovBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.sidx = function (box) {
+            try {
+                // console.log("SIDX Method Started");
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+                let sidxView = new DataView(box);
+
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+
+                sidxBoxObj = new SidxBox(boxSize, boxName);
+
+                sidxBoxObj.version = sidxView.getUint32(8);
+                sidxBoxObj.referenceId = sidxView.getUint32(12);
+                sidxBoxObj.timescale = sidxView.getUint32(16);
+                sidxBoxObj.earliestPresentation = sidxBoxObj.version === 0 ? sidxView.getUint32(20) : (sidxView.getUint32(20) + sidxView.getUint32(24)) / sidxView.getUint32(16);
+                sidxBoxObj.offset = sidxBoxObj.version === 0 ? sidxView.getUint32(24) : sidxView.getUint32(28) + sidxView.getUint32(32);
+                sidxBoxObj.reserved = sidxBoxObj.version === 0 ? sidxView.getInt16(28) : sidxView.getUint16(36);
+                sidxBoxObj.referenceCount = sidxBoxObj.version === 0 ? sidxView.getInt16(30) : sidxView.getInt16(38);
+
+                let _1stSubseg_index = sidxView.getUint32(8) === 0 ? 32 : 40;
+
+                for (var i = 0; i < sidxBoxObj.referenceCount; i++) {
+                    sidxBoxObj.entry_count.push({
+                        reference_type: sidxView.getUint32(_1stSubseg_index) >>> 31,
+                        reference_size: sidxView.getUint32(_1stSubseg_index) & 0x7fffffff,
+                        sub_seg_duration: sidxView.getUint32(_1stSubseg_index + 4) / sidxBoxObj.timescale,
+                        starts_with_SAP: ((sidxView.getUint32(_1stSubseg_index + 8)) >>> 31),
+                        contains_sap: (sidxView.getUint32(_1stSubseg_index + 8) << 1) >>> 28,
+                        sap_delta_time: (((sidxView.getUint32(_1stSubseg_index + 8)) << 1) << 3) / sidxBoxObj.timescale
+                    });
+                }
+                objIsoMp4File.sidx.push(sidxBoxObj);
+                // console.log("SIDX Method Ended");
+                return sidxBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " Stack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.moof = function (box) {
+            try {
+                // console.log("MOOF Method Started");
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+                let children = FileDetails.prototype.getboxChildren(box).boxCollection;
+
+                moofBoxObj = new moofBox(boxSize, boxName);
+
+                let _mfhd = children.find(function (child) {
+                    return child.name === "mfhd";
+                });
+
+                let trafs = children.filter(function (child) {
+                    return child.name === "traf";
+                });
+                moofBoxObj.mfhd = _mfhd !== undefined ?
+                    this.mfhd(box.slice(_mfhd.offset, _mfhd.offset + _mfhd.size)) : null;
+                // console.log("Sequence Number: " + (parseInt(moofBoxObj.mfhd.sequence_number)));
+                for (var i = 0; i < trafs.length; i++) {
+                    // console.log("TrafOffset: " + trafs[i].offset + " TrafSize: " + trafs[i].size);
+                    moofBoxObj.trafs.push(FileDetails.prototype.traf(box.slice(trafs[i].offset, trafs[i].offset + trafs[i].size)));
+                }
+                objIsoMp4File.moof.push(moofBoxObj);
+                // console.log("MOOF Method Ended");
+                return moofBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.traf = function (box) {
+
+            try {
+                let boxInf = this.getboxInf(box.slice(0, 8));
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+                let children = this.getboxChildren(box).boxCollection;
+                let _tfdt = children.find(function (child) {
+                    return child.name === "tfdt";
+                });
+                let _tfhd = children.find(function (child) {
+                    return child.name === "tfhd";
+                });
+                let _trun = children.find(function (child) {
+                    return child.name === "trun";
+                });
+                trafBoxObj = new TrafBox(boxSize, boxName);
+                trafBoxObj.tfdt = _tfdt !== undefined ?
+                    FileDetails.prototype.tfdt(box.slice(_tfdt.offset, _tfdt.offset + _tfdt.size)) : null;
+                trafBoxObj.tfhd = _tfhd !== undefined ?
+                    FileDetails.prototype.tfhd(box.slice(_tfhd.offset, _tfhd.offset + _tfhd.size)) : null;
+                trafBoxObj.trun = _trun !== undefined ?
+                    FileDetails.prototype.trun(box.slice(_trun.offset, _trun.offset + _trun.size)) : null;
+                // console.log("TRAF Ended");
+
+                return trafBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.tfhd = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            tfhdBoxObj = new TfhdBox(boxSize, boxName);
+            let boxView = new DataView(box);
+            tfhdBoxObj.trackId = boxView.getInt32(12);
+            return tfhdBoxObj;
+        }
+        FileDetails.prototype.tfdt = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            tfdtBoxObj = new tfdtBox(boxSize, boxName);
+
+            let boxView = new DataView(box);
+            tfdtBoxObj.baseMediaDecodeTime = boxView.getInt32(12);
+            return tfdtBoxObj;
+        }
+        FileDetails.prototype.sbgp = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            // console.log("====== sbgp printing ======");
+            // console.log("boxName: " + boxName);
+            // console.log("boxSize: " + boxSize);
+            // console.log("====== sbgp end printing ======");
+        }
+        FileDetails.prototype.trun = function (box) {
+            try {
+                // console.log("TRUN Started");
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+                let trunBoxView = new DataView(box);
+
+                let byteIndex = 12;
+
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+
+                trunBoxObj = new TrunBox(boxSize, boxName);
+
+                var trunObj = {
+                    tr_flags: trunBoxView.getUint32(8),
+                    sample_count: trunBoxView.getUint32(12),
+                    data_offset: 0,
+                    first_sample_flags: 0,
                     sample_duration: 0,
-                    timescale: 0,
-                    baseMediaDecodeTime: 0,
                     composite_time_offset: 0
                 };
 
-                // workout the initialization segment in case you need it.
-                // let init = segments.find(function (seg) {
-                //    return seg.name === "init";
-                // });
+                byteIndex += (((trunBoxView.getUint32(8) & 0x000001) === 0x000001) ? 4 : 0);
+                trunObj.data_offset = (((trunBoxView.getUint32(8) & 0x000001) === 0x000001) ? trunBoxView.getUint32(byteIndex) : 0);
+                byteIndex += (((trunBoxView.getUint32(8) & 0x000004) === 0x000004) ? 4 : 0);
+                trunObj.first_sample_flags = (((trunBoxView.getUint32(8) & 0x000004) === 0x000004) ? trunBoxView.getUint32(byteIndex) : 0);
+                byteIndex += (((trunBoxView.getUint32(8) & 0x000100) === 0x000100) ? 4 : 0);
+                trunObj.sample_duration = (((trunBoxView.getUint32(8) & 0x000100) === 0x000100) ? trunBoxView.getUint32(byteIndex) : 0);
+                byteIndex += (((trunBoxView.getUint32(8) & 0x000800) === 0x000800) ? 4 : 0);
+                trunObj.composite_time_offset = (((trunBoxView.getUint32(8) & 0x000800) === 0x000800) ? trunBoxView.getUint32(byteIndex) : 0);
 
-                // let initBuffer = initseg;
+                trunBoxObj.tr_flags = trunObj.tr_flags;
+                trunBoxObj.composite_time_offset = trunObj.composite_time_offset;
+                trunBoxObj.data_offset = trunObj.data_offset;
+                trunBoxObj.first_sample_flags = trunObj.first_sample_flags;
+                trunBoxObj.sample_count = trunObj.sample_count;
+                trunBoxObj.sample_duration = trunObj.sample_duration;
 
-                // get all the boxes inside the initialization segment.
-                let validCollection = fileContent.processSeg.Mp4Structure.initSeg.objboxes;
-                let initBoxes = [];
-                if (validCollection.isvalid) {
-                    initBoxes = validCollection.boxes;
-                } else {
-                    console.log("Init segment is Invalid");
-                    return;
-                }                
-                 
-                // get the moov box from initialization
-                let moovBox = initBoxes.find(function (box) {
-                    return box.name === "moov";
-                });
-
-                // get all the children of moov box
-                let validmoov = fileContent.processSeg.getboxChildren(fileContent.processSeg.Mp4Structure.initSeg.content.slice(moovBox.offset, moovBox.offset + moovBox.size));      
-                let moovChildren = [];
-
-                if (validmoov.isvalid) {
-                    moovChildren = validmoov.boxCollection;
-                } else {
-                    console.log("MoovChildren invalid");
-                    return;
-                }
-
-                // get the trex with the default_duration for the samples
-                let mvexoffsets = moovChildren.find(function (b) {
-                    return b.name === "mvex";
-                });
-
-                // get all the children of mvex box.
-                let objmvexChildren = fileContent.processSeg.getboxChildren(fileContent.processSeg.Mp4Structure.initSeg.content.slice(moovBox.offset, moovBox.offset + moovBox.size).slice(mvexoffsets.offset, mvexoffsets.offset + mvexoffsets.size));
-                let mvexChildren = [];
-
-                if (objmvexChildren.isvalid) {
-                    mvexChildren = objmvexChildren.boxCollection;
-                } else {
-                    console.log("Mvex children not valid");
-                    return;
-                }
-
-                // get the buffer for mvex
-                console.log("Mvex buffer got!");
-                let mvexBuffer = fileContent.processSeg.Mp4Structure.initSeg.content.slice(moovBox.offset, moovBox.offset + moovBox.size).slice(mvexoffsets.offset, mvexoffsets.offset + mvexoffsets.size);
-                let trexs = mvexChildren.filter(function (mvc) { return mvc.name === "trex" });
-                let trafs = children.filter(function (box) {
-                    return box.name === "traf";
-                });
-
-                let sidxInf = fileContent.processSeg.getboxInf(sidxbox.slice(0, 8));
-
-                let decodeTime = 0;
-                console.log("Number of Trafs = " + trafs.length);
-                for (var i = 0; i < trafs.length && !sampleEPT.isInit; i++) {
-                    // console.log("===================== Traf Number " + (i + 1) + " Information ===========================");
-                    let objtrafChildren = fileContent.processSeg.getboxChildren(moofbox.slice(trafs[i].offset, trafs[i].offset + trafs[i].size));
-                    let trafChildren = [];
-
-                    if (objtrafChildren.isvalid) {
-                        trafChildren = objtrafChildren.boxCollection;
-                    } else {
-                        console.log("traf children are not valid!");
-                        return;
-                    }
-
-                    let tfdtinf = trafChildren.find(function (box) {
-                        return box.name === "tfdt";
-                    });
-
-                    fun = fileContent.processSeg.Mp4Structure[sidxInf.name];
-                    let sidxCon = fun(sidxbox);
-                    let ts = sidxCon.timescale;
-
-                    fun = fileContent.processSeg.Mp4Structure[tfdtinf.name];
-                    decodeTime = fun(moofbox.slice(trafs[i].offset, trafs[i].offset + trafs[i].size).slice(tfdtinf.offset, tfdtinf.offset + tfdtinf.size));
-
-                    // console.log("BaseMediaDecodeTime: " + decodeTime.baseMediaDecodeTime + "\tcalculated dts: " + decodeTime.baseMediaDecodeTime / ts);
-
-                    // trun
-                    let trunoffsets = trafChildren.filter(function (trun) {
-                        return trun.name === "trun";
-                    });
-
-                    // tfhd
-                    let tfhdoffsets = trafChildren.find(function (tfhd) {
-                        return tfhd.name === "tfhd";
-                    });
-                    console.log("Trunoffset length = " + trunoffsets.length);
-                    for (var trunIndex = 0; trunIndex < trunoffsets.length; trunIndex++) {
-                        console.log("Getting the reference to the Trunoffsets!");
-                        fun = fileContent.processSeg.Mp4Structure[trunoffsets[trunIndex].name];
-                        console.log("Calling Trunoffsets!");
-                        let trunCon = fun(moofbox.slice(trafs[i].offset, trafs[i].offset + trafs[i].size).slice(trunoffsets[trunIndex].offset,
-                            trunoffsets[trunIndex].offset + trunoffsets[trunIndex].size));
-                        console.log("Getting the reference to the tfhdoffsets!");
-                        fun = fileContent.processSeg.Mp4Structure[tfhdoffsets.name];
-                        console.log("Calling tfhdoffsets!");
-                        let tfhdCon = fun(moofbox.slice(trafs[i].offset, trafs[i].offset + trafs[i].size).slice(tfhdoffsets.offset, tfhdoffsets.offset + tfhdoffsets.size));
-                        console.log("Get the TrackId = " + tfhdCon.trackId + " contentId = " + parseInt(contentId));
-                        if (tfhdCon.trackId === parseInt(contentId)) {
-                            // Sum of all the previous samples.
-                            let smplduration = 0;
-                            console.log("Finding trex with the contentId");
-                            let ctrex = trexs.find(function (trex) {
-                                fun = fileContent.processSeg.Mp4Structure[trex.name];
-                                let trexCon = fun(mvexBuffer.slice(trex.offset, trex.offset + trex.size));
-                                if (trexCon.trackID === tfhdCon.trackId) {
-                                    sampleEPT.trackId = tfhdCon.trackId;
-                                    sampleEPT.isInit = true;
-                                    return trex;
-                                }
-                            });
-                            console.log("ctrex " + (ctrex === null || ctrex === undefined));
-                            // array of composition times for each sample
-                            let ctcontent = { trackId: "", ct: [] };
-
-                            console.log("Sample Durations");
-                            for (var sampleIndex = 1; sampleIndex <= trunCon.sample_count; sampleIndex++) {
-                                // Composition Time of the current sample.
-                                let cntSmpCT = (decodeTime.baseMediaDecodeTime / ts) +
-                                    (smplduration += (trunCon.tr_flags & 0x000004 === 4) ? ((fun(mvexBuffer.slice(ctrex.offset, ctrex.offset + ctrex.size)).default_sample_duration) / ts) : (trunCon.sample_duration / ts)) +
-                                    (trunCon.composite_time_offset / ts);
-
-                                // console.log("TrackId: " + tfhdCon.trackId + " composition time sample " + sampleIndex + " = " + cntSmpCT + ", sample duration = " + smplduration);
-                                ctcontent.ct.push(cntSmpCT);
-                            }
-                            console.log("TrackId: " + tfhdCon.trackId + " composition time sample " + 1 + " = " + ctcontent.ct[0]);
-                            console.log("TrackId: " + tfhdCon.trackId + " composition time sample " + (ctcontent.ct.length - 1) + " = " + ctcontent.ct[ctcontent.ct.length - 1]);
-
-                            ctcontent.trackId = tfhdCon.trackId;
-                            let segDuration = ctcontent.ct[ctcontent.ct.length - 1] - ctcontent.ct[0];
-
-                            sampleEPT.ept = ctcontent.ct[0];
-                            sampleEPT.lpt = ctcontent.ct[ctcontent.ct.length - 1];
-                            sampleEPT.tr_flags = trunCon.tr_flags & 0x000004 === 4;
-                            sampleEPT.default_sample_duration = fun(mvexBuffer.slice(ctrex.offset, ctrex.offset + ctrex.size)).default_sample_duration;
-                            sampleEPT.sample_duration = trunCon.sample_duration;
-                            sampleEPT.timescale = ts;
-                            sampleEPT.baseMediaDecodeTime = decodeTime.baseMediaDecodeTime;
-                            sampleEPT.composite_time_offset = trunCon.composite_time_offset;
-                            sampleEPT.smplduration = smplduration;
-                        }
-                    }
-                }
-                return sampleEPT;
-            },
-            getConformence: function (segment) {
-                
-                let segView = new DataView(segment);
-                let boxOffset = 0;
-                let contentComponent = fileContent.mpdFile.querySelector("ContentComponent[contentType='video']");
-                let contentId = contentComponent.getAttribute("id");
-                let objsampleEPT = { ept: 0, isinit: false, trackId: parseInt(contentId), isConforming: false };
-                let boxes = [];
-
-                do {
-                    // getboxInf(segment.slice());                    
-                    let boxInf = fileContent.processSeg.getboxInfo(segment.slice(boxOffset, boxOffset + 8));
-
-                    if (boxInf.boxValid) {
-                        let boxSize = boxInf.size;
-                        let boxName = boxInf.name;
-
-                        boxes.push({ name: boxName, size: boxSize, offset: boxOffset });
-
-                        if (boxName === "ftyp") {
-                            let fun = fileContent.processSeg.Mp4Structure[boxName];
-                            objsampleEPT.isConforming = true;
-                            fileContent.processSeg.getAllboxes(segment);
-                            sourceBuffer.appendBuffer(segment);
-
-                            return objsampleEPT;
-                        }
-
-                        if (boxName === "sidx") {
-                            console.log("SIDX would be called!");
-
-                            // let fun = fileContent.processSeg.Mp4Structure[boxName];
-                            // fun(segment.slice(boxOffset, boxOffset + boxSize));
-                        }
-
-                        // console.log("boxName: " + boxName + "\tboxSize: " + boxSize);
-
-                        // if (boxName === "mdat") {
-                        //    fun = this[boxName];
-                        //    fun(segBuffer.slice(boxOffset, boxOffset + boxSize));
-                        //    boxOffset += boxSize;
-                        //    return;
-                        // }
-
-                        if (boxName === "moof") {
-                            let sidxBoxes = boxes.filter(function (b) { return b.name === "sidx" });
-                            let sidxoffsets = null;                            
-
-                            let objmoofChildren = fileContent.processSeg.getboxChildren(segment.slice(boxOffset, boxSize + boxOffset));
-                            let moofChildren = [];                            
-
-                            if (objmoofChildren.isvalid) {
-                                moofChildren = objmoofChildren.boxCollection;
-                            } else {
-                                console.log("moofChildren are not valid!");
-                                return;
-                            }
-
-                            let trafs = moofChildren.filter(function (trafbox) {
-                                return trafbox.name === "traf";
-                            });                            
-
-                            // trafs children
-                            let fun = fileContent.processSeg.Mp4Structure[boxName];
-                            let mooftrackId = 0;
-
-                            for (var i = 0; i < trafs.length && !objsampleEPT.isinit; i++) {
-                                fun = fileContent.processSeg.Mp4Structure[trafs[i].name];
-
-                                let objtrafChildren = fileContent.processSeg.getboxChildren(segment.slice(boxOffset, boxSize + boxOffset).slice(trafs[i].offset, trafs[i].offset + trafs[i].size));
-                                let ctrafChildren = [];
-
-                                if (objtrafChildren.isvalid) {
-                                    ctrafChildren = objtrafChildren.boxCollection;
-                                } else {
-                                    console.log("Traf children not valid");
-                                    return;
-                                }
-
-                                let tfhd = ctrafChildren.find(function (trafchild) {
-                                    return trafchild.name === "tfhd";
-                                });
-
-                                let trafBuffer = segment.slice(boxOffset, boxSize + boxOffset).slice(trafs[i].offset, trafs[i].offset + trafs[i].size);
-
-                                // set the function to point to the tfhd function and call it to get the trackId.
-                                fun = fileContent.processSeg.Mp4Structure[tfhd.name];
-                                mooftrackId = fun(trafBuffer.slice(tfhd.offset, tfhd.offset + tfhd.size)).trackId;
-
-                                // workout the trackId from the sidx box
-                                if (parseInt(objsampleEPT.trackId) === mooftrackId) {
-                                    for (var sidxIndex = 0; sidxIndex < sidxBoxes.length && !objsampleEPT.isinit; sidxIndex++) {
-                                        fun = fileContent.processSeg.Mp4Structure[sidxBoxes[sidxIndex].name];
-                                        let referenceId = fun(segment.slice(sidxBoxes[sidxIndex].offset,
-                                            sidxBoxes[sidxIndex].offset + sidxBoxes[sidxIndex].size)).referenceId;
-
-                                        if (referenceId === mooftrackId) {
-                                            //let initialization = fileContent.mpdFile.querySelector("Initialization");
-                                            //let start = parseInt(initialization.getAttribute("range").split("-")[0]);
-                                            //let end = parseInt(initialization.getAttribute("range").split("-")[1]);
-                                            //let byteLength = (end - start) + 1;
-
-                                            //let initSeg = fileContent.mediaFile.slice(start, start + byteLength); 
-                                            
-                                            console.log("GetSamples of the Segment");
-                                            let sampleEPT = fileContent.processSeg.getFirstSample(segment.slice(boxOffset, boxSize + boxOffset),
-                                                segment.slice(sidxBoxes[sidxIndex].offset,
-                                                    sidxBoxes[sidxIndex].offset + sidxBoxes[sidxIndex].size),
-                                                fileContent.processSeg.Mp4Structure.initSeg.content);                                           
-
-                                            objsampleEPT.ept = sampleEPT.ept;
-                                            objsampleEPT.isinit = true;
-                                            objsampleEPT.trackId = mooftrackId;
-
-                                            // (decodeTime.baseMediaDecodeTime / ts) +
-                                            //    (smplduration += (trunCon.tr_flags & 0x000004 === 4) ? ((fun(mvexBuffer.slice(ctrex.offset, ctrex.offset + ctrex.size)).default_sample_duration) / ts)
-                                            //        : (trunCon.sample_duration / ts)) + (trunCon.composite_time_offset / ts);
-
-                                            console.log("Print Source Buffer Status { " + (sourceBuffer === null) + " }");
-                                            if ((sourceBuffer !== null || sourceBuffer !== undefined)) {
-                                                var bufferedTime = sourceBuffer.buffered.length > 0 ? sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1) : 0;
-                                                var eptDif = (sampleEPT.baseMediaDecodeTime / sampleEPT.timescale) +
-                                                    (bufferedTime + (sampleEPT.tr_flags) ? (sampleEPT.default_sample_duration / sampleEPT.timescale)
-                                                        : (sampleEPT.sample_duration / sampleEPT.timescale) +
-                                                        (sampleEPT.composite_time_offset / sampleEPT.timescale));
-
-                                                console.log("BufferedTime = " + bufferedTime + " ept = " + eptDif);
-                                                if ((eptDif <= sampleEPT.ept) || ((eptDif - bufferedTime <= 1) &&
-                                                    (eptDif - bufferedTime >= 0))) {
-                                                    objsampleEPT.isConforming = true;                                                    
-                                                    if (!sourceBuffer.updating) {
-                                                        fileContent.segmentsInf.loading = true;
-                                                        sourceBuffer.appendBuffer(segment); 
-
-                                                        console.log("StreamAppendedBuffered");
-
-                                                        fileContent.segmentsInf.loading = false;
-                                                        fileContent.segmentsInf.isProcessing = false;
-                                                        fileContent.isForceAppend = false;
-                                                        fileContent.segmentsInf.arrayIndex += 1;
-                                                    }
-                                                    // fileContent.mergeSeg(segment);
-                                                } else {
-                                                    fileContent.tempSeg.push({ segment: segment, segdetails: objsampleEPT });
-                                                    var bufferedTime = sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1);
-                                                    for (var segIndex = 0; segIndex < fileContent.tempSeg.length; segIndex++) {
-                                                        var _curr = fileContent.tempSeg.find(function (seg) {
-                                                            return ((seg.segdetails.ept - bufferedTime <= 1 && seg.segdetails.ept - bufferedTime >= 0));
-                                                        });
-                                                        if (_curr !== null && _curr !== undefined) {
-                                                            // sourceBuffer.appendBuffer(_curr);
-                                                            // fileContent.segmentsInf.arrayIndex += 1;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            boxOffset += boxSize;                            
-                        } else {
-                            boxOffset += boxSize;
-                        }
-                    } else {
-                        objsampleEPT.isConforming = false;
-                        break;
-                    }
-                } while (boxOffset < segView.byteLength);
-                return objsampleEPT;
-            },
-            getBoxes: function (seg) {
-                try {
-                    let arrayInts = new Uint8Array(seg);
-                    let boxes = [];
-                    let boxOffset = 0;
-                    var objSegInf = { validSeg: true, totalSize: 0 };
-
-                    do {
-                        let boxInf = fileContent.processSeg.getboxInf(seg.slice(boxOffset, boxOffset + 8));
-                        if (boxInf.boxValid) {
-                            let boxSize = boxInf.size;
-                            let boxName = boxInf.name;
-                            objSegInf.validSeg = true;
-
-                            console.log("Box Name: " + boxName);
-                            console.log("Box Size: " + boxSize);
-
-                            if (boxName === "moof") {
-
-                            }
-                            boxes.push({ name: boxName, size: boxSize, offset: boxOffset });
-                            boxOffset += boxSize;
-                            objSegInf.totalSize += boxSize;
-                        } else {
-                            objSegInf.validSeg = false;
-                            console.log("Segment Invalid!");
-                            break;
-                        }
-                    } while (boxOffset < arrayInts.length);
-                    return objSegInf;
-                } catch (e) {
-                    console.log("Error on the checkingFile");
+                // console.log("TRUN ENDED");
+                return trunBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
                 }
             }
-        },
+        }
+        FileDetails.prototype.mfhd = function (box) {
+            try {
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+
+                mfhdBoxObj = new mfhdBox(boxSize, boxName);
+
+                let mfhdView = new DataView(box.slice(12, boxSize));
+                let sequence_number = mfhdView.getUint32(0);
+                mfhdBoxObj.sequence_number = sequence_number;
+
+                return mfhdBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.mvex = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+            let children = FileDetails.prototype.getboxChildren(box).boxCollection;
+            let _mehd = children.find(function (child) {
+                return child.name === "mehd";
+            });
+            let _trexs = children.filter(function (child) {
+                return child.name === "trex";
+            });
+            mvexBoxObj = new MvexBox(boxSize, boxName);
+            mvexBoxObj.mehd = _mehd !== undefined ?
+                FileDetails.prototype.mehd(box.slice(_mehd.offset, _mehd.offset + _mehd.size)) : null;
+
+            for (var i = 0; i < _trexs.length; i++) {
+                mvexBoxObj.trex.push(FileDetails.prototype.trex(box.slice(_trexs[i].offset, _trexs[i].offset + _trexs[i].size)));
+            }
+            return mvexBoxObj;
+        }
+        FileDetails.prototype.trex = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            let trexView = new DataView(box);
+            trexBoxObj = new TrexBox(boxSize, boxName);
+
+            trexBoxObj.trackID = trexView.getUint32(12);
+            trexBoxObj.default_sample_description_index = trexView.getUint32(16);
+            trexBoxObj.default_sample_duration = trexView.getUint32(20);
+            trexBoxObj.default_sample_flags = trexView.getUint32(28);
+            trexBoxObj.default_sample_size = trexView.getUint32(24);
+
+            return trexBoxObj;
+        }
+        FileDetails.prototype.mehd = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            let mehdView = new DataView(box);
+            mehdBoxObj = new mehdBox(boxSize, boxName);
+            mehdBoxObj.fragment_duration = mehdView.getUint32(8);
+
+            return mehdBoxObj;
+        }
+        FileDetails.prototype.mvhd = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+            let mvhdView = new DataView(box);
+            let byteOffset = 0;
+            let versionFlags = mvhdView.getUint32(8, false);
+            byteOffset += 8;
+            mvhdBoxObj = new mvhdBox(boxSize, boxName);
+
+            byteOffset += versionFlags >>> 24 === 1 ? 4 : 0;
+            mvhdBoxObj.creation_time = versionFlags >>> 24 === 1 ?
+                (mvhdView.getUint32(byteOffset, false) + mvhdView.getUint32(byteOffset + 4, false)) : mvhdView.getUint32(byteOffset, false);
+            byteOffset += versionFlags >>> 24 === 1 ? 8 : 4;
+            mvhdBoxObj.modification_time = versionFlags >>> 24 === 1 ?
+                (mvhdView.getUint32(byteOffset, false) + mvhdView.getUint32(byteOffset + 4, false)) : mvhdView.getUint32(byteOffset, false);
+            byteOffset += versionFlags >>> 24 === 1 ? 8 : 4;
+            mvhdBoxObj.timescale = mvhdView.getUint32(byteOffset, false);
+            byteOffset += 4;
+            mvhdBoxObj.duration = versionFlags >>> 24 === 1 ?
+                (mvhdView.getUint32(byteOffset, false) + mvhdView.getUint32(byteOffset + 4, false)) : mvhdView.getUint32(byteOffset, false);
+            byteOffset += versionFlags >>> 24 === 1 ? 8 : 4;
+
+            return mvhdBoxObj;
+        }
+        FileDetails.prototype.mdat = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+        }
+        FileDetails.prototype.stts = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            sttsBoxObj = new SttsBox(boxSize, boxName);
+            sttsBoxObj.create_entries_table(box);
+
+            return sttsBoxObj;
+        }
+        FileDetails.prototype.stco = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            stcoBoxObj = new StcoBox(boxSize, boxName);
+            stcoBoxObj.processOffsets(box);
+
+            return stcoBoxObj;
+        }
+        FileDetails.prototype.mdia = function (box) {
+            try {
+                // console.log("Mdia Started");
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+
+                let children = FileDetails.prototype.getboxChildren(box).boxCollection;
+                let _mdhd = children.find(function (child) {
+                    return child.name === "mdhd";
+                });
+                let _hdlr = children.find(function (child) {
+                    return child.name === "hdlr";
+                });
+                let _minf = children.find(function (child) {
+                    return child.name === "minf";
+                });
+                mdiaBoxObj = new MdiaBox(boxSize, boxName);
+                mdiaBoxObj.minf = _minf !== undefined ?
+                    FileDetails.prototype.minf(box.slice(_minf.offset, _minf.offset + _minf.size)) : null;
+                mdiaBoxObj.mdhd = _mdhd !== undefined ?
+                    FileDetails.prototype.mdhd(box.slice(_mdhd.offset, _mdhd.offset + _mdhd.size)) : null;
+                mdiaBoxObj.hdlr = _hdlr !== undefined ?
+                    FileDetails.prototype.hdlr(box.slice(_hdlr.offset, _hdlr.offset + _hdlr.size)) : null;
+                // console.log("Mdia ENDED");
+                return mdiaBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.minf = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            let children = FileDetails.prototype.getboxChildren(box).boxCollection;
+            let _stbl = children.find(function (child) {
+                return child.name === "stbl";
+            });
+            minfBoxObj = new MinfBox(boxSize, boxName);
+            minfBoxObj.stbl = _stbl !== undefined ?
+                this.stbl(box.slice(_stbl.offset, _stbl.offset + _stbl.size)) : null;
+
+            return minfBoxObj;
+        }
+        FileDetails.prototype.mdhd = function (box) {
+            try {
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+                let mdhdView = new DataView(box);
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+                mdhdBoxObj = new MdhdBox(boxSize, boxName);
+
+                let byteOffset = 8;
+                mdhdBoxObj.version = mdhdView.getUint32(byteOffset);
+                byteOffset += 4;
+                mdhdBoxObj.creation_time = mdhdBoxObj.version === 1 ? mdhdView.getUint32(byteOffset) + mdhdView.getUint32(byteOffset + 4) : mdhdView.getUint32(byteOffset);
+                byteOffset += mdhdBoxObj.version === 1 ? 8 : 4;
+                mdhdBoxObj.modification_time = mdhdBoxObj.version === 1 ? mdhdView.getUint32(byteOffset) + mdhdView.getUint32(byteOffset + 4) : mdhdView.getUint32(byteOffset);
+                mdhdBoxObj.timescale = mdhdView.getUint32(byteOffset);
+                byteOffset += 4;
+                mdhdBoxObj.duration = mdhdBoxObj.version === 1 ? mdhdView.getUint32(byteOffset) + mdhdView.getUint32(byteOffset + 4) : mdhdView.getUint32(byteOffset);
+
+                // More properties to be assigned.
+                return mdhdBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.hdlr = function (box) {
+            try {
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+                let hdlrView = new DataView(box);
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+
+                let byteOffset = 12;
+                hdlrBoxObj = new HdlrBox(boxSize, boxName);
+                hdlrBoxObj.pre_defined = hdlrView.getUint32(byteOffset);
+                byteOffset += 4;
+                hdlrBoxObj.handler_type = hdlrView.getUint32(byteOffset);
+
+                // Set more properties.
+
+                return hdlrBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        FileDetails.prototype.stbl = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            let children = FileDetails.prototype.getboxChildren(box).boxCollection;
+            let _stsd = children.find(function (child) {
+                return child.name === "stsd";
+            });
+            let _stts = children.find(function (child) {
+                return child.name === "stts";
+            });
+            let _ctts = children.find(function (child) {
+                return child.name === "ctts";
+            });
+            let _stco = children.find(function (child) {
+                return child.name === "stco";
+            });
+
+            stblBoxObj = new StblBox(boxSize, boxName);
+            stblBoxObj.stts = _stts !== undefined ?
+                FileDetails.prototype.stts(box.slice(_stts.offset, _stts.offset + _stts.size)) : null;
+            stblBoxObj.stco = _stco !== undefined ?
+                FileDetails.prototype.stco(box.slice(_stco.offset, _stco.offset + _stco.size)) : null;
+            stblBoxObj.stsd = _stsd !== undefined ?
+                FileDetails.prototype.stsd(box.slice(_stsd.offset, _stsd.offset + _stsd.size)) : null;
+            stblBoxObj.ctts = _ctts !== undefined ?
+                FileDetails.prototype.ctts(box.slice(_ctts.offset, _ctts.offset + _ctts.size)) : null;
+
+            return stblBoxObj;
+        }
+        FileDetails.prototype.stsd = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            stsdBoxObj = new StsdBox(boxSize, boxName);
+            stsdBoxObj.create_entries_table(box);
+            return stsdBoxObj;
+        }
+        FileDetails.prototype.ctts = function (box) {
+            let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+
+            let boxSize = boxInf.size;
+            let boxName = boxInf.name;
+
+            cttsBoxObj = new CttsBox(boxSize, boxName);
+            cttsBoxObj.create_entries_table(box);
+
+            return cttsBoxObj;
+        }
+        FileDetails.prototype.tkhd = function (box) {
+            try {
+                // console.log("TKHD Started");
+                let boxInf = FileDetails.prototype.getboxInf(box.slice(0, 8));
+                let tkhdView = new DataView(box);
+                let boxSize = boxInf.size;
+                let boxName = boxInf.name;
+                let byteOffset = 8;
+
+                tkhdBoxObj = new TkhdBox(boxSize, boxName);
+                tkhdBoxObj.version = tkhdView.getUint32(byteOffset) >>> 24;
+                byteOffset += 4;
+                tkhdBoxObj.creation_time = tkhdBoxObj.version === 1 ? (tkhdView.getUint32(byteOffset) + tkhdView.getUint32(byteOffset + 4)) : tkhdView.getUint32(byteOffset);
+                byteOffset += tkhdBoxObj.version === 1 ? 8 : 4;
+                tkhdBoxObj.modification_time = tkhdBoxObj.version === 1 ? (tkhdView.getUint32(byteOffset) + tkhdView.getUint32(byteOffset + 4)) : tkhdView.getUint32(byteOffset);
+                byteOffset += tkhdBoxObj.version === 1 ? 8 : 4;
+                tkhdBoxObj.track_Id = tkhdView.getUint32(byteOffset);
+                byteOffset += 4;
+                byteOffset += 4; // Reserved bytes.
+                tkhdBoxObj.duration = tkhdBoxObj.version === 1 ? (tkhdView.getUint32(byteOffset) + tkhdView.getUint32(byteOffset + 4)) : tkhdView.getUint32(byteOffset);
+                byteOffset += tkhdBoxObj.version === 1 ? 8 : 4;
+                byteOffset += 16; // Array of two 32 bit reserved bytes.
+                tkhdBoxObj.layer = tkhdView.getUint16(byteOffset);
+                byteOffset += 2;
+                tkhdBoxObj.alternate_group = tkhdView.getUint16(byteOffset);
+
+                // console.log("TrackId: " + tkhdBoxObj.track_Id);
+                // More object properties to add.
+                // console.log("TKHD Ended");
+                return tkhdBoxObj;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+    }
+    FileDetails.prototype = new FileDetails();    
+    var fileDetails = null;
+
+    // Custom SourceBuffer
+    function Source_Buffer() {
+        this.sourceBuffer = null;
+        this.updating = false;
+        this.mode = "";
+        this.textTracks = [];
+        this.videoTracks = [];
+        this.audioTracks = [];
+        this.buffered = null;
+        this.timeStampOffset = 0;
+        this.appendWindowStart = 0;
+        this.appendWindowEnd = 0;
+
+        // Custom Properties.
+        this.codecs = "";
+        this.presentationId = 0;
+        this.fileName = "";
+        this.isupdating = false;
+        this.segment_index = 0;
+        this.iserror = false;
+
+        // Append into the buffer.
+        Source_Buffer.prototype.appendBuffer = function (buffer) {     
+            var fileName = fileDetails.mpdFile.querySelector("BaseURL").innerHTML;
+            var sourceBuffer = mediaSource.sourceBuffers.find(function (sb) {
+                return sb.fileName === fileName;
+            });
+            if (!sourceBuffer.sourceBuffer.updating) {
+                sourceBuffer.sourceBuffer.appendBuffer(buffer);                
+            }
+        }
+        // Remove from the buffer.
+        Source_Buffer.prototype.remove = function (start, end) {            
+            this.sourceBuffer.remove(start, end);
+        }
+
+        // Report an error.
+        Source_Buffer.prototype.error = function (e) {
+            console.log("Error " + e.toString());
+            fileContent.sourceBuffInf.error = true;
+
+            // Try replaying the video.
+            fileContent.playbackStatus.currentTime = vidplayer.currentTime;
+            var currentSourceBuffer = mediaSource.sourceBuffers[0];
+            if (currentSourceBuffer != null || currentSourceBuffer != undefined) {
+                console.log("SourceBuffer would be removed!");
+                mediaSource.removeSourceBuffer(currentSourceBuffer);
+                fileContent.sourceBuffInf.removed = true;
+            }
+        }
+
+        // Add Event Listeners.
+        Source_Buffer.prototype.addEventListeners = function () {
+            this.sourceBuffer.addEventListener("updateend", function () {
+                try {
+                    var fileName = fileDetails.mpdFile.querySelector("BaseURL").innerHTML;                  
+                    var sourceBuffer = mediaSource.sourceBuffers.find(function (sb) {
+                        return sb.fileName === fileName;
+                    });                 
+                    if (this != null && this.buffered != null && this.buffered.length) {
+                        for (var i = 0; i < this.buffered.length; i++) {
+                            var endY = this.buffered.end(i);
+                            var startX = this.buffered.start(i);
+                            $(".progress-buffered").css({
+                                "width": (((endY - startX) * totalwidth) / mvideo.duration) + "px"
+                            });
+                        }
+                        console.log("mediaSource readyState = " + mediaSource.readyState + " bufferedTime " + this.buffered.end(this.buffered.length - 1) +
+                            " duration = " + mvideo.duration);
+                        if (Math.ceil(this.buffered.end(this.buffered.length - 1)) >= Math.ceil(mvideo.duration) && mediaSource.readyState === "open") {
+                            console.log("End of Stream");
+                            mediaSource.endOfStream();
+                        }
+                        sourceBuffer.segment_index += 1;                       
+                    }
+                    sourceBuffer.updating = this.updating;
+                } catch (e) {
+                    if (e instanceof Error) {
+                        if (e.name === "InvalidStateError") {
+                            // this.getMediaSource();
+                            console.log("MediaSource not ready!");
+                        }
+                        else if (e.name === "NotSupportedError") {
+                            console.log("MimeType not supported.");
+                        } else if (e.name === "InvalidAccessError") {
+                            console.log("Empty string for mimeType");
+                        }
+                        else if (e.name === "QuotaExceededError") {
+                            console.log("Empty string for mimeType");
+                        }
+                    }
+                }
+            });
+            this.sourceBuffer.addEventListener("error", function (e) {
+                alert("Error in the Source Buffer");
+            });
+        }
+
+        Source_Buffer.prototype.monitorFile = function () {
+            var monitorInterval = setInterval(function () {                
+                fileDetails = fileDetails === null || fileDetails === undefined ? new FileDetails() : fileDetails;
+                var fileName = fileDetails.mpdFile.querySelector("BaseURL").innerHTML;
+                // console.log("Buffers In Media Source = " + mediaSource.sourceBuffers.length);
+
+                var sourceBuffer = mediaSource.sourceBuffers.find(function (sb) {
+                    return sb.fileName === fileName;
+                });
+
+                if (!videoPlayer.initialized) {
+                    var initCoords = fileDetails.mpdFile.querySelector("Initialization");
+                    var start = parseInt(initCoords.getAttribute("range").split("-")[0]);
+                    var end = parseInt(initCoords.getAttribute("range").split("-")[1]);                  
+
+                    if (fileDetails.byteOffset > end) {
+                        // console.log("ByteOffset = " + fileDetails.byteOffset);
+                        videoPlayer.AddEventListeners();
+                        var Init = fileDetails.mediaFile.slice(start, (end - start) + 1);
+                        fileDetails.createIsoMp4(Init);
+                        if (fileDetails.getConformence(Init)) {                            
+                            if (sourceBuffer !== null && sourceBuffer !== undefined) {    
+                                videoPlayer.initialized = true;
+                                sourceBuffer.updating = true;
+                                sourceBuffer.appendBuffer(Init);
+                            }                            
+                        }
+                    }
+                }
+
+                // console.log("Updating = " + sourceBuffer.updating);
+                if (fileDetails.segmentUrls[sourceBuffer.segment_index] !== null &&
+                    fileDetails.segmentUrls[sourceBuffer.segment_index] !== undefined &&
+                    !sourceBuffer.updating) {
+                    
+                    var start = parseInt(fileDetails.segmentUrls[sourceBuffer.segment_index].getAttribute("mediaRange").split("-")[0]);
+                    var end = parseInt(fileDetails.segmentUrls[sourceBuffer.segment_index].getAttribute("mediaRange").split("-")[1]);
+                    
+                    if (fileDetails.byteOffset > end && videoPlayer.initialized) {
+                        var segment = fileDetails.mediaFile.slice(start, start + ((end - start) + 1));
+                        fileDetails.createIsoMp4(segment);
+                        if (fileDetails.getConformence(segment)) {
+                            sourceBuffer.updating = true;
+                            sourceBuffer.appendBuffer(segment);
+                        }
+                    }
+                }
+                if (fileDetails.byteOffset >= fileDetails.byteLength) {
+                    clearInterval(monitorInterval);
+                }
+            }, 10);
+        };
+    };
+    Source_Buffer.prototype = new Source_Buffer();
+  
+
+    // Custom MediaSource.
+    function Media_Source() {
+        var media_source = new MediaSource();
+        
+        this.source_buffers = [];     
+        this.activeSourceBuffers = [];
+        this.sourceBuffers = [];
+        this.duration = 0;
+        this.readyState = false;
+        this.mediasource = media_source;
+
+        Media_Source.prototype.addSourceBuffer = function (sourceBuffer) {
+            try {
+                var isChromium = window.chrome;
+                var winNav = window.navigator;
+                var vendorName = winNav.vendor;
+                var isOpera = typeof window.opr !== "undefined";
+                var isIEedge = winNav.userAgent.indexOf("Edge") > -1;
+                var isIOSChrome = winNav.userAgent.match("CriOS");
+
+                var representation = fileDetails.mpdFile.querySelector("Representation");
+                var fileName = fileDetails.mpdFile.querySelector("BaseURL");
+                var mimeType = representation.getAttribute("mimeType");
+                var codecs = representation.getAttribute("codecs");
+                var encodings = mimeType + ';codecs="' + codecs + '"';
+
+                sourceBuffer.codecs = encodings;
+                
+                sourceBuffer.fileName = fileName.innerHTML;
+                console.log("Codecs: " + sourceBuffer.codecs);
+
+                if (isIOSChrome) {
+                    // is Google Chrome on IOS                              
+                    sourceBuffer.sourceBuffer = media_source.addSourceBuffer(encodings);                    
+                } else if (
+                    isChromium !== null &&
+                    typeof isChromium !== "undefined" &&
+                    vendorName === "Google Inc." &&
+                    isOpera === false &&
+                    isIEedge === false
+                ) {
+                    // is Google Chrome
+                    sourceBuffer.sourceBuffer = media_source.addSourceBuffer(encodings);
+                    console.log("Source Buffer Added");
+                } else {
+                    // not Google Chrome 
+                    sourceBuffer.sourceBuffer = media_source.addSourceBuffer('video/mp4');
+                }
+                sourceBuffer.sourceBuffer.mode = "sequence";
+                sourceBuffer.addEventListeners();
+                this.sourceBuffers.push(sourceBuffer);
+                var source_buffer = this.sourceBuffers.find(function (sb) {
+                    return sb.fileName === fileName.innerHTML;
+                });                
+                source_buffer.monitorFile();
+                return sourceBuffer.sourceBuffer;
+            } catch (e) {
+                if (e instanceof Error) {
+                    console.log("ErroName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                }
+            }
+        }
+        Media_Source.prototype.addEventListeners = function () {
+            // videoPlayer = videoPlayer === null || videoPlayer === undefined ? new VideoPlayer() : videoPlayer;
+            vidplayer.src = URL.createObjectURL(media_source);                 
+            media_source.addEventListener("sourceopen", function () {
+                try {
+                    //alert("Source Open");
+                    var sourceBuffer = new Source_Buffer();
+                    mediaSource.addSourceBuffer(sourceBuffer);
+                } catch (e) {
+                    alert("Exception " + e.message);
+                }
+            });
+            media_source.addEventListener("sourceclosed", function () {
+
+            });
+        }
+        Media_Source.prototype.getSourceBuffers = function () {
+            return this.sourceBuffers;
+        }
+        Media_Source.prototype.getActiveSourceBuffers = function () {
+            return this.activeSourceBuffers;
+        }
+    };    
+    Media_Source.prototype = new Media_Source();
+    //var mediaSource = new Media_Source();
+    
+    // object to hold the streaming file content.
+    var fileContent = {
         videoElement: {
             waiting: false,
             playing: false,
             played: false,
-        },
-        appendInit: function () {
-            if (!fileContent.playerInitialized) {
-                console.log("Appending Initialization");
-
-                var initialization = fileContent.mpdFile.querySelector("Initialization");
-                var start = initialization.getAttribute("range").split("-")[0].trim();
-                var end = initialization.getAttribute("range").split("-")[1].trim();
-                var byteLength = (end - start) + 1;
-
-                var initSegment = fileContent.mediaFile.slice(start,
-                    start + byteLength);
-
-                var boxCollection = this.processSeg.getAllboxes(initSegment);
-
-                this.processSeg.Mp4Structure.initSeg.content = initSegment;
-                this.processSeg.Mp4Structure.initSeg.objboxes = boxCollection;
-
-                console.log("Initialization Coordinates: { Start = " + start + ", End = " + end + " }");
-                var isConforming = fileContent.processSeg.getConformence(initSegment);
-            }            
         },
         appendFirstSegment: function () {
             var arrayBuffer = fileContent.segmentUrls[0];
@@ -1114,24 +1718,7 @@
                 }
             }
         },
-        mergeSeg: function (seg) {
-            try {                
-                var segView = new DataView(seg);
-                for (var i = 0; i < segView.byteLength; i++) {
-                    try {
-                        fileContent.mfileView.setInt8(fileContent.byteOffset, segView.getInt8(i));
-                        fileContent.byteOffset += 1;
-                    } catch (e) {
-                        if (e instanceof RangeError) {
-
-                        }
-                    }
-                }
-                fileContent.segmentsInf.recIndex += 1;
-            } catch (e) {
-                console.log("Error during segments!");
-            }
-        },
+   
         mfileView: null,
         mediaFile: null,
         isForceAppend: false,
@@ -1214,7 +1801,7 @@
 
                             // var buffer = fileContent.addSourceBuffer(mediaSource);
                             if (isIOSChrome) {
-                                // is Google Chrome on IOS
+                                // is Google Chrome on IOS                                
                                 fileContent.addSourceBuffer(mediaSource);
                             } else if (
                                 isChromium !== null &&
@@ -1270,17 +1857,7 @@
                 sourceBuffer.mode = "sequence";
 
                 sourceBuffer.addEventListener("error", function (e) {
-                    console.log("Error " + e.toString());
-                    fileContent.sourceBuffInf.error = true;     
-
-                    // Try replaying the video.
-                    fileContent.playbackStatus.currentTime = vidplayer.currentTime;
-                    var currentSourceBuffer = mediaSource.sourceBuffers[0];
-                    if (currentSourceBuffer != null || currentSourceBuffer != undefined) {
-                        console.log("SourceBuffer would be removed!");
-                        mediaSource.removeSourceBuffer(currentSourceBuffer);   
-                        fileContent.sourceBuffInf.removed = true;
-                    }                    
+                                       
                 });
 
                 sourceBuffer.addEventListener("updateend", function () {
@@ -1321,22 +1898,7 @@
                 }
             }
         },
-        appendBuffer: function (segDet) {
-            try {
-                if (!fileContent.segmentsInf.isProcessing &&
-                    !fileContent.segmentsInf.loading) {
-                    fileContent.segmentsInf.isProcessing = true;
-                    fileContent._appendBuffer();
-                }
-            } catch (e) {
-                if (e instanceof Error) {
-                    if (e.name === "InvalidStateError") {
-                        console.log("ErrorName: " + e.name + " ErrorMessage: " + e.message + " StackTrace: " + e.stack);
-                    }
-                }
-            }
-        }
-    }
+       }
 
     // Get the Mpd of the file to stream.
     var mpd_request = $.ajax({
@@ -1345,7 +1907,7 @@
     mpd_request.done(function (mpdfile) {
         var domParser = new DOMParser();
         var xmlDoc = domParser.parseFromString(mpdfile, "text/xml");
-        fileContent.mpdFile = mpdfile;
+        
         var file = mpdfile;
         init_mpdfile(file);
 
@@ -1371,21 +1933,28 @@
         period = mpdfile.querySelectorAll("Period[type='video']");
         var segmentURL = mpdfile.querySelectorAll("SegmentURL");
         var lastSegURL = segmentURL[segmentURL.length - 1];
-
+        var fileName = mpdFile.querySelector("BaseURL");
         var byteLength = parseInt((lastSegURL.getAttribute("mediaRange").split('-')[1]).trim()) + 1;
 
-        fileContent.mediaFile = new ArrayBuffer(byteLength);
-        fileContent.mfileView = new DataView(fileContent.mediaFile);
-        fileContent.getMediaSource();
+        fileDetails = new FileDetails();
+        fileDetails.mediaFile = new ArrayBuffer(byteLength);
+        fileDetails.mfileView = new DataView(fileDetails.mediaFile);
+        // console.log("SegmentURL Length = " + segmentURL.length);
         for (var i = 0; i < segmentURL.length; i++) {
-            fileContent.segmentUrls[i] = segmentURL[i];
-        }        
+            fileDetails.segmentUrls.push(segmentURL[i]);
+        }
+        // console.log("fileDetails.segmentUrls Length = " + fileDetails.segmentUrls.length);
+
+        fileDetails.mpdFile = mpdfile;
+        mediaSource = mediaSource === null || mediaSource === undefined ? new Media_Source() : mediaSource;                
+        mediaSource.addEventListeners();
+
+        //alert("New Buffers in Media = " + mediaSource.sourceBuffers.length);
 
         var sumDurations = 0;
         for (var i = 0; i < ads.length; i++) {
             sumDurations += ads[i].duration;
         }
-
         if (period.length > 0) {
             mvideo.currentTime = 0;
             mvideo.duration = getDurations($(period).attr("duration"));
@@ -1414,19 +1983,14 @@
     // Check the currently playing file if there is any.
     var processSeg = function (data) {
         try {
-            fileContent.mergeSeg(data.segment);
-            if (fileContent.sourceBuffInf.readyState) {
-                if (!fileContent.playerInitialized) {
-                    fileContent.appendInit();
-                }
-                if (fileContent.playerInitialized && sourceBuffer.buffered.length <= 0) {
-                    fileContent.appendFirstSegment(); 
-                }
-                if (fileContent.videoElement.played && fileContent.videoElement.waiting) {
-                    console.log("played and waiting");
-                    fileContent._appendSegment();
-                }
-            }
+            fileDetails = fileDetails === null || fileDetails === undefined ? new FileDetails() : fileDetails;
+            fileDetails.createIsoMp4(data.segment);
+            if (fileDetails.getConformence(data.segment)) {
+                console.log("Merge Segment");
+                fileDetails.mergeSeg(data.segment);                
+            } else {
+
+            }            
         } catch (e) {
             if (e instanceof Error) {
                 console.log(e.name + ":" + e.message + ":" + e.stack);
@@ -1490,10 +2054,6 @@
     // Receive the merged segment from the web worker.
     player_worker.onmessage = function (event) {
         try {
-            var data = event.data;
-            if (data.init) {
-
-            }
             processSeg(event.data);
         }
         catch (e) {
@@ -1530,31 +2090,39 @@
         }
     }
 
+    // Receiving segments 
+    function RecSegments() {
+        this.subsegments = [];
+        this.content = [];
+        this.representationId = 0;
+        this.segment_index = 0;
+        this.isinit = false;
+        this.Uint8Array = null;     
+    }
+    var objrec_segments = new RecSegments();
+    
     window.vidseg = function (data) {
         if (data.isLastsubsegment) {
-            objsegment.arrayCon.push(data.currentvideo.content);
+            objrec_segments.subsegments.push(data.currentvideo.content);
+            objrec_segments.content = objrec_segments.subsegments.splice(0, objrec_segments.subsegments.length);
+            objrec_segments.segment_index = data.currentvideo.segIndex;
+            objrec_segments.Uint8Array = new Uint8Array(data.currentvideo.segSize);
             console.log("Complete Segment");
-            player_worker.postMessage({
-                segment: new Uint8Array(data.currentvideo.segSize),
-                content: objsegment.arrayCon.splice(0, objsegment.arrayCon.length),
-                representationId: data.currentvideo.representationId,
-                segIndex: data.currentvideo.segIndex
-            });
+            player_worker.postMessage(objrec_segments);
         } else {
-            if (data.initialization && !objsegment.initRec) {
-                objsegment.arrayCon = [];
-                objsegment.initRec = true;
-                console.log("Initialization Received!");
-                objsegment.arrayCon.push(data.currentvideo.content);
-                player_worker.postMessage({
-                    segment: new Uint8Array(data.currentvideo.segSize),
-                    content: objsegment.arrayCon.splice(0, objsegment.arrayCon.length),
-                    representationId: data.currentvideo.representationId,
-                    segIndex: data.currentvideo.segIndex
-                });
+            if (data.initialization) {
+                objrec_segments = objrec_segments === null  || objrec_segments === undefined ? new RecSegments() : objrec_segments;
+                objrec_segments.subsegments.push(data.currentvideo.content);
+                objrec_segments.content = objrec_segments.subsegments.splice(0, objrec_segments.subsegments.length);
+                objrec_segments.representationId = data.currentvideo.representationId;
+                objrec_segments.Uint8Array = new Uint8Array(data.currentvideo.segSize);
+                objrec_segments.segment_index = data.currentvideo.segIndex;
+                player_worker.postMessage(objrec_segments);
+
+                console.log("Initialization Received!");                
                 return;
             }
-            objsegment.arrayCon.push(data.currentvideo.content);
+            objrec_segments.subsegments.push(data.currentvideo.content);            
         }
     };
 
@@ -1579,41 +2147,6 @@
             showQualities();
         });
     }
-
-    // request a new bandwidth from the server
-    // $("#qualities span").click(function () {
-    //    vidplayer.pause();
-
-    //    // Cancel the current streamming thread
-    //    parentWindow.beforeasyncCall();
-
-    //    reqObj.functionName = "VideoRequest";
-    //    reqObj.data.bandwidth = $(this).attr("value");
-    //    reqObj.data.start = vidplayer.currentTime;
-    //    reqObj.data.end = vidplayer.duration - vidplayer.currentTime;
-    //    reqObj.data.videoId = videoId;
-
-    //    reqObj.data.streamId = parentWindow.getStreamId();
-
-    //    window.reqvid(JSON.stringify(reqObj));
-    //    if (sourceBuffer.updating) {
-    //        setOffset = setInterval(function () {
-    //            if (!sourceBuffer.updating) {
-    //                sourceBuffer.abort();
-    //                sourceBuffer.timestampOffset = vidplayer.buffered.end(vidplayer.buffered.length - 1);
-    //                vidplayer.play();
-    //                clearInterval(setOffset);
-    //            }
-    //        }, 1000);
-    //    } else {
-    //        try {
-    //            sourceBuffer.abort();
-    //            sourceBuffer.timestampOffset = vidplayer.buffered.end(vidplayer.buffered.length - 1);
-    //        } catch (e) {
-    //            alert("Errot Setting timestamp");
-    //        }
-    //    }
-    // });
 
     if ($(vidplayer).paused) {
         $(".btn-play").css({
@@ -1963,54 +2496,26 @@
         //    endStream();
         // }
 
-        console.log("IsProcessing = " + fileContent.segmentsInf.isProcessing + " Loading = " + fileContent.segmentsInf.loading + 
-            " Duration = " + mvideo.duration + " BufferedTime = " + Math.ceil(sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)));
-        if (!fileContent.segmentsInf.isProcessing && !fileContent.segmentsInf.loading &&
-            (Math.ceil(sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)) < mvideo.duration)) {
+        //console.log("IsProcessing = " + fileContent.segmentsInf.isProcessing + " Loading = " + fileContent.segmentsInf.loading + 
+        //    " Duration = " + mvideo.duration + " BufferedTime = " + Math.ceil(sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)));
+        //if (!fileContent.segmentsInf.isProcessing && !fileContent.segmentsInf.loading &&
+        //    (Math.ceil(sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)) < mvideo.duration)) {
             
-            let percentBuffered = (vidplayer.currentTime / sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)) * (100);
-            let nextSegment = fileContent.segmentUrls[fileContent.segmentsInf.arrayIndex < (fileContent.segmentUrls.length - 1) ?
-                fileContent.segmentsInf.arrayIndex + 1 : fileContent.segmentsInf.arrayIndex];
-            let end = parseInt(nextSegment.getAttribute("mediaRange").split("-")[1]);
+        //    let percentBuffered = (vidplayer.currentTime / sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)) * (100);
+        //    let nextSegment = fileContent.segmentUrls[fileContent.segmentsInf.arrayIndex < (fileContent.segmentUrls.length - 1) ?
+        //        fileContent.segmentsInf.arrayIndex + 1 : fileContent.segmentsInf.arrayIndex];
+        //    let end = parseInt(nextSegment.getAttribute("mediaRange").split("-")[1]);
 
-            console.log("recIndex = " + fileContent.segmentsInf.recIndex + " end = " + end + " percentBuffered = " + percentBuffered + " byteLength = " +
-                fileContent.mediaFile.byteLength);
-            if ((fileContent.segmentsInf.recIndex > fileContent.segmentsInf.arrayIndex) &&
-                (fileContent.segmentsInf.recIndex < fileContent.segmentUrls.length)) {
-                if (percentBuffered >= 30) {
-                    console.log("Timeupdate Appending!");
-                    fileContent._appendSegment();
-                }               
-            }                     
-        }
-
-        // if ((vidplayer.currentTime / sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1) * 100) < 10) {
-        //    var segmentURLs = [];
-        //    segmentURLs = mpdFile.querySelectorAll("SegmentURL");           
-        //    var segURL = function () {
-        //        for (var i = 0; i < segmentURLs.length; i++) {    
-        //            var cntSegStart = segmentURLs[i].getAttribute("mediaRange").split("-")[0]; 
-        //            if (cntSegStart.trim() == sliceOffset) {
-        //                return segmentURLs[i];
-        //            }
-        //        }
-        //    };
-
-        //    // alert("About to Append " + segmentURLs.length);
-        //    // var segURL = segmentURLs.find(function (surl) {
-        //    //    return surl.getAttribute("mediaRange").split("-")[0] === sliceOffset;
-        //    // });           
-
-        //    var mediaRange = segURL().getAttribute("mediaRange");
-        //    var segLength = (mediaRange.split("-")[1].trim()) - (mediaRange.split("-")[0].trim()) + 1;
-
-        //    var segBuffer = mediaFile.slice(sliceOffset, sliceOffset + segLength);
-        //    checkingFile(mediaFile.slice(sliceOffset, sliceOffset + segLength));
-
-        //    // sourceBuffer.appendBuffer(segBuffer);
-        //    sliceOffset += segLength;
-        // }
-
+        //    console.log("recIndex = " + fileContent.segmentsInf.recIndex + " end = " + end + " percentBuffered = " + percentBuffered + " byteLength = " +
+        //        fileContent.mediaFile.byteLength);
+        //    if ((fileContent.segmentsInf.recIndex > fileContent.segmentsInf.arrayIndex) &&
+        //        (fileContent.segmentsInf.recIndex < fileContent.segmentUrls.length)) {
+        //        if (percentBuffered >= 30) {
+        //            console.log("Timeupdate Appending!");
+        //            fileContent._appendSegment();
+        //        }               
+        //    }                     
+        //}
         $(ads).each(function (_index, ad) {
             // get the duration of the currently playing video
             if (mvideo.currentTime <= ad.start && ((vidplayer.currentTime - ad.start) <= ad.duration) && !ad.adEnded) {
@@ -2360,49 +2865,6 @@
         // }, 3000);
     }
 
-    // on duration loaded
-    vidplayer.ondurationchange = function () {
-        if (duration <= 0) {
-            duration = mvideo.duration + mvideo.adsDurations;
-            parentWindow.getRelated(descvalue, videoId, false);
-            parentWindow.getRelatedVidInf(videoId);
-            parentWindow.getComments(1, videoId, 1);
-            fileContent.segmentsInf.loading = false;
-            fileContent.segmentsInf.isProcessing = false;
-            fileContent.playerInitialized = true;
-
-            // This code would be here temporarily.
-            var xmlRequest = new XMLHttpRequest();
-            xmlRequest.open("GET", "/video/getviews?videoId=" + document.getElementById("videoId").getAttribute("value"));
-            xmlRequest.onload = function (e) {
-                if (this.status === 200) {
-                    // alert("View Counted!");
-                }
-            }
-            xmlRequest.send();
-        }
-
-        var width = $(vidplayer).innerWidth();
-        var height = $(vidplayer).innerHeight();
-        var ctrls_con = document.getElementById("ctrls-con");
-        totalwidth = ctrls_con.clientWidth;
-        var controls = $(".controls-container").innerWidth();
-
-        $(ads).each(function (_index, ad) {
-            if ((ad.start >= vidplayer.currentTime) && !ad.isplaying) {
-                $(".ad-cntrls").css({
-                    "display": "inline-block"
-                });
-                $(".ctrls-main-con").css({
-                    "display": "none"
-                });
-                ad.isplaying = true;
-            }
-        });
-        // console.log("Durration Changed! " + duration);
-        displayTime();
-        parentWindow.domContentLoaded();
-    }
     vidplayer.onloadedmetadata = function () {
         // $(ads).each(function (_index, ad) {
         //    if ((ad.start >= vidplayer.currentTime)) {

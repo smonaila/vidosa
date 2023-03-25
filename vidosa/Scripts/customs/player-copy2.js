@@ -124,19 +124,16 @@
         // FTYPE Box
         var FtypeBox = function (length, typeName) {
             FullBox.apply(this, [length, typeName]);
-            this.majorBrand = "";
-            this.minorBrand = "";
-            this.compatibleBrands = "";
+            this.majorBrand = 0;
+            this.minorBrand = 0;
+            this.compatibleBrands = [];
             this.isdata = true;
         }
         // ftype inherit from Fullbox
-        extend(FtypeBox, FullBox);
-        FtypeBox.prototype = {
-
-        };
-
+        FtypeBox.prototype = new FullBox();
+        
         // ftype box object
-        var ftypeBoxObj = new FtypeBox(0, "ftyp")
+        var ftypeBoxObj = new FtypeBox(0, "ftyp");
 
         // TRAK
         var trakBox = function (length, typeName) {
