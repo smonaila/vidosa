@@ -1,6 +1,4 @@
-﻿using DotNetOpenAuth.AspNet.Clients;
-using DotNetOpenAuth.GoogleOAuth2;
-using Microsoft.AspNet.Membership.OpenAuth;
+﻿using Microsoft.AspNet.Membership.OpenAuth;
 using System;
 using System.Collections.Generic;
 using System.Linq;

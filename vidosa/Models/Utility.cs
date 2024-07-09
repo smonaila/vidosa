@@ -79,7 +79,7 @@ namespace vidosa.Models
                     XAttribute XType = new XAttribute(xNamespace + "type", "video");
                     XAttribute XStartTime = new XAttribute(xNamespace + "start", "0");
 
-                    Period.Add(new XAttribute("type", "video"));
+                    Period.Add(new XAttribute(xNamespace + "type", "video"));
                     Period.Add(new XAttribute("start", "0"));
 
                     // xAttributes.Add(XType);

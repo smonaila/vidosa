@@ -476,58 +476,100 @@ $(document).ready(function () {
         window.addClicksLoadComm(anchorLoadComm);
     }
 
-    window.pausePlayStream = function () {
-        var xmlRequest = new XMLHttpRequest();        
-        let currentVidInfo = window.getFrameId();       
-        xmlRequest.open("POST", "/video/pauseplaystream");
-        xmlRequest.setRequestHeader("Content-Type", "application/json;charset=utf-8");
-        xmlRequest.onload = function (e) {
-            if (this.status == 200) {
-                let streamStatus = JSON.parse(xmlRequest.response);
-                switch (streamStatus.Status) {
-                    case "Started":
-                        StreamStatus.Status = StreamStatus.Started;
-                        console.log("Streaming has started | main player page");
-                        break;
-                    case "Paused":
-                        StreamStatus.Status = StreamStatus.Paused;
-                        console.log("Streaming has been paused | main player page");
-                        break;
-                    case "Running":
-                        StreamStatus.Status = StreamStatus.Running;
-                        console.log("Streaming is running | main player page");
-                        break;
-                    case "Ended":
-                        StreamStatus.Status = StreamStatus.Ended;
-                        console.log("Streaming has ended | main player page");
-                        break;
-                    case "Waiting":
-                        StartStreaming();
-                        StreamStatus.Status = StreamStatus.Waiting;
-                        break;
-                    case "Canceled":                        
-                    case "Error":
-                        console.log("Streaming Canceled!");
-                        StreamStatus.Status = StreamStatus.Canceled;
-                        var currentTask = getCurrentTask();
 
-                        if (currentTask !== null || currentTask !== undefined) {
-                            if (currentTask === streamStatus.TaskId) {
-                                currentTask.Id = streamStatus.TaskId;
-                                currentTask.IsCanceled = true;                                
+    class NullException extends Error {
+        constructor(message, errorName) {
+            super(message);
+            this.name = errorName;
+        }
+    }
+
+
+    class CodingTypeNotSupported extends Error {
+        constructor(name) {
+            super(message, name);
+            this.name = name;
+            this.message = message;
+        }
+    }
+
+
+
+    window.pausePlayStream = function (errorName) {
+        try {
+            if (errorName === "playerErrorCall") {
+                return;
+            }
+            var model = {
+                streamStatus: StreamStatus.Status.name,
+                connectionId: currentVidInfo != null || currentVidInfo != undefined ?
+                    currentVidInfo.connectionId : null
+            };
+            let currentVidInfo = window.getFrameId();
+            if (model.connectionId === undefined || model.connectionId === null) {
+                throw new NullException("ConnectionId is null", "ConnectioIdError");
+            }
+
+            if (currentVidInfo === null || currentVidInfo === undefined) {
+                throw new NullException("Frame Id could not be defined", "FrameNullException");
+            }
+            var xmlRequest = new XMLHttpRequest();
+            xmlRequest.open("POST", "/video/pauseplaystream");
+            xmlRequest.setRequestHeader("Content-Type", "application/json;charset=utf-8");
+            xmlRequest.onload = function (e) {
+                if (this.status == 200) {
+                    let streamStatus = JSON.parse(xmlRequest.response);
+                    switch (streamStatus.Status) {
+                        case "Started":
+                            StreamStatus.Status = StreamStatus.Started;
+                            console.log("Streaming has started | main player page");
+                            break;
+                        case "Paused":
+                            StreamStatus.Status = StreamStatus.Paused;
+                            console.log("Streaming has been paused | main player page");
+                            break;
+                        case "Running":
+                            StreamStatus.Status = StreamStatus.Running;
+                            console.log("Streaming is running | main player page");
+                            break;
+                        case "Ended":
+                            StreamStatus.Status = StreamStatus.Ended;
+                            console.log("Streaming has ended | main player page");
+                            break;
+                        case "Waiting":
+                            StartStreaming();
+                            StreamStatus.Status = StreamStatus.Waiting;
+                            break;
+                        case "Canceled":
+                        case "Error":
+                            console.log("Streaming Canceled!");
+                            StreamStatus.Status = StreamStatus.Canceled;
+                            var currentTask = getCurrentTask();
+
+                            if (currentTask !== null || currentTask !== undefined) {
+                                if (currentTask === streamStatus.TaskId) {
+                                    currentTask.Id = streamStatus.TaskId;
+                                    currentTask.IsCanceled = true;
+                                }
                             }
-                        }
-                        break;
-                    default:
-                        console.log("Unknown Status Returned");
+                            break;
+                        default:
+                            console.log("Unknown Status Returned");
+                    }
+                }
+            }
+            xmlRequest.send(JSON.stringify(model));
+        } catch (e) {
+            if (e instanceof Error) {
+                if (e.name === "ConnectioIdError") {
+                    alert("ConnectionId is null cannot pause the stream.");
+                } else if (e.name === "FrameNullException") {
+                    alert("FrameNullException.");
+                } else if (e.name === "CodingTypeNotSupported") {
+                    // When Pausing because of Coding Error.
                 }
             }
         }
-        var model = {
-            streamStatus: StreamStatus.Status.name,
-            connectionId: currentVidInfo.connectionId
-        };
-        xmlRequest.send(JSON.stringify(model));
     }
     // Set and get the status of streaming.
     window.receiveStatus = function (statusData) {
@@ -821,8 +863,17 @@ $(document).ready(function () {
         return Page.pageId;
     }
     window.getFrameId = function () {
-        let frameId = myframe.getAttribute("data-iframeId");
-        return { frameId: Page.frameId, connectionId: Page.pageId, isInitialized: true };
+        try {
+            let frameId = myframe.getAttribute("data-iframeId");
+            if (frameId === null || frameId === undefined) {
+                throw new NullException("The frame Id is not defined", "FrameNullException");
+            }
+            return { frameId: Page.frameId, connectionId: Page.pageId, isInitialized: true };
+        } catch (e) {
+            if (e instanceof Error) {
+                alert("Frame Id could not be defined.");
+            }
+        }
     }  
     let htmlCode = "";
     window.showInsertUrlModal = function () {
@@ -1143,7 +1194,7 @@ $(document).ready(function () {
         $(anchors).click(function (event) {
             var target = $(event.target);
             var url = $(this).attr("href");
-            window.updateURL(url);
+            // window.updateURL(url);
         });
     }
     window.updateContent = function(data) {

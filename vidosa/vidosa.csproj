@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props')" />
   <Import Project="..\..\..\..\..\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\..\..\..\..\Administrator\source\repos\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -15,7 +16,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>vidosa</RootNamespace>
     <AssemblyName>vidosa</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress>true</Use64BitIISExpress>
@@ -48,35 +49,59 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommonServiceLocator, Version=2.0.4.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\CommonServiceLocator.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\CommonServiceLocator.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DotNetOpenAuth.AspNet, Version=4.2.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetOpenAuth.AspNet.4.3.4.13329\lib\net45-full\DotNetOpenAuth.AspNet.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetOpenAuth.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.Core.4.3.4.13329\lib\net45-full\DotNetOpenAuth.Core.dll</HintPath>
     </Reference>
-    <Reference Include="DotNetOpenAuth.Core, Version=4.2.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetOpenAuth.Core.4.3.4.13329\lib\net45-full\DotNetOpenAuth.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetOpenAuth.InfoCard, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.InfoCard.4.3.4.13329\lib\net45-full\DotNetOpenAuth.InfoCard.dll</HintPath>
     </Reference>
-    <Reference Include="DotNetOpenAuth.GoogleOAuth2, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotNetOpenAuth.GoogleOAuth2.1.1.1\lib\net40\DotNetOpenAuth.GoogleOAuth2.dll</HintPath>
+    <Reference Include="DotNetOpenAuth.InfoCard.UI, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.InfoCard.UI.4.3.4.13329\lib\net45-full\DotNetOpenAuth.InfoCard.UI.dll</HintPath>
     </Reference>
-    <Reference Include="DotNetOpenAuth.OAuth, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetOpenAuth.OAuth.Core.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetOpenAuth.OAuth.Common, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth.Common.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth.Common.dll</HintPath>
     </Reference>
-    <Reference Include="DotNetOpenAuth.OAuth.Consumer, Version=4.2.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetOpenAuth.OAuth.Consumer.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth.Consumer.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetOpenAuth.OAuth.ServiceProvider, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth.ServiceProvider.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth.ServiceProvider.dll</HintPath>
     </Reference>
-    <Reference Include="DotNetOpenAuth.OpenId, Version=4.2.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetOpenAuth.OpenId.Core.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenId.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetOpenAuth.OAuth2, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth2.Core.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth2.dll</HintPath>
     </Reference>
-    <Reference Include="DotNetOpenAuth.OpenId.RelyingParty, Version=4.2.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetOpenAuth.OpenId.RelyingParty.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenId.RelyingParty.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetOpenAuth.OAuth2.AuthorizationServer, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth2.AuthorizationServer.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth2.AuthorizationServer.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OAuth2.Client, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth2.Client.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth2.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OAuth2.Client.UI, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth2.Client.UI.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth2.Client.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OAuth2.ClientAuthorization, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth2.ClientAuthorization.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth2.ClientAuthorization.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OAuth2.ResourceServer, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OAuth2.ResourceServer.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OAuth2.ResourceServer.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OpenId.Provider, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OpenId.Provider.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenId.Provider.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OpenId.Provider.UI, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OpenId.Provider.UI.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenId.Provider.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OpenId.RelyingParty.UI, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OpenId.RelyingParty.UI.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenId.RelyingParty.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OpenId.UI, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OpenId.Core.UI.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenId.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OpenIdInfoCard.UI, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OpenIdInfoCard.UI.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenIdInfoCard.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetOpenAuth.OpenIdOAuth, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetOpenAuth.OpenIdOAuth.4.3.4.13329\lib\net45-full\DotNetOpenAuth.OpenIdOAuth.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
@@ -90,11 +115,11 @@
       <HintPath>..\packages\Facebook.7.0.6\lib\net45\Facebook.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.Identity.Core.2.2.3\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.3\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNet.Identity.EntityFramework.2.2.3\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.3\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -173,6 +198,7 @@
     </Reference>
     <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
@@ -229,6 +255,7 @@
     </Reference>
     <Reference Include="Microsoft.Extensions.Http, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Http.2.1.1\lib\netstandard2.0\Microsoft.Extensions.Http.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Extensions.Identity.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Identity.Core.2.2.0\lib\netstandard2.0\Microsoft.Extensions.Identity.Core.dll</HintPath>
@@ -260,30 +287,43 @@
     </Reference>
     <Reference Include="Microsoft.Extensions.WebEncoders, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.WebEncoders.2.2.0\lib\netstandard2.0\Microsoft.Extensions.WebEncoders.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Net.Http.Headers, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Net.Http.Headers.2.2.0\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin, Version=4.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.4.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.2.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Security, Version=4.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Security.4.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Cookies, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.0.1\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Facebook, Version=4.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Security.Facebook.4.0.1\lib\net45\Microsoft.Owin.Security.Facebook.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Google, Version=4.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Security.Google.4.0.1\lib\net45\Microsoft.Owin.Security.Google.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.0.1\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Win32.Registry, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Registry.4.5.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
@@ -292,6 +332,7 @@
     <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="NgrokAspNetCore.Lib, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Ngrok.AspNetCore.1.0.6\lib\netstandard2.0\NgrokAspNetCore.Lib.dll</HintPath>
@@ -309,16 +350,20 @@
     </Reference>
     <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ComponentModel.Annotations.4.5.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration.ConfigurationManager, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Configuration.ConfigurationManager.4.4.1\lib\net461\System.Configuration.ConfigurationManager.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.5.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
@@ -327,14 +372,20 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Net.Http.2.0.20505.0\lib\net40\System.Net.Http.dll</HintPath>
+    <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
@@ -348,6 +399,11 @@
       <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.1\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>True</Private>
@@ -355,6 +411,26 @@
     <Reference Include="System.Security" />
     <Reference Include="System.Security.AccessControl, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.AccessControl.4.5.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+      <Private>True</Private>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Security.Cryptography.Xml, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -392,6 +468,9 @@
       <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.4\lib\net45\System.Web.Razor.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
     <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.dll</HintPath>
       <Private>True</Private>
@@ -404,47 +483,40 @@
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Abstractions" />
-    <Reference Include="System.Web.Routing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web.Optimization">
       <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Unity.Abstractions, Version=3.3.1.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\Unity.Abstractions.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\Unity.Abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Unity.Configuration, Version=5.2.5.0, Culture=neutral, PublicKeyToken=6d32ff45e0ccc69f, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\Unity.Configuration.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\Unity.Configuration.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Unity.Container, Version=5.8.13.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\Unity.Container.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\Unity.Container.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Unity.Interception, Version=5.5.5.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\Unity.Interception.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\Unity.Interception.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Unity.Interception.Configuration, Version=5.1.7.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\Unity.Interception.Configuration.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\Unity.Interception.Configuration.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Unity.RegistrationByConvention, Version=2.1.9.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\Unity.RegistrationByConvention.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\Unity.RegistrationByConvention.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Unity.ServiceLocation, Version=2.1.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unity.5.8.13\lib\net46\Unity.ServiceLocation.dll</HintPath>
+      <HintPath>..\packages\Unity.5.8.13\lib\net47\Unity.ServiceLocation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="WebGrease">
@@ -619,10 +691,10 @@
     <Compile Include="Models\VidosaContext.cs" />
     <Compile Include="Models\ViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="vidosads.Designer.cs">
+    <Compile Include="---vidosads.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>vidosads.xsd</DependentUpon>
+      <DependentUpon>---vidosads.dataxsd</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -695,6 +767,13 @@
     <Content Include="Areas\admin\Views\Home\GetPost.cshtml" />
     <Content Include="Areas\admin\Views\Home\Post.cshtml" />
     <Content Include="Content\customs\blog-min.css" />
+    <Content Include="--nuget.config" />
+    <Content Include="Areas\admin\Views\Home\tableposts.cshtml" />
+    <Content Include="Areas\admin\Views\Home\AddRedirect.cshtml" />
+    <Content Include="Areas\admin\Views\Home\SaveRedirect.cshtml" />
+    <Content Include="Areas\admin\Views\Home\AddSubject.cshtml" />
+    <Content Include="Areas\admin\Views\Home\CreateSubject.cshtml" />
+    <Content Include="Areas\admin\Views\Home\GetChapters.cshtml" />
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
@@ -703,13 +782,6 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
-    <Content Include="--nuget.config" />
-    <Content Include="Areas\admin\Views\Home\tableposts.cshtml" />
-    <Content Include="Areas\admin\Views\Home\AddRedirect.cshtml" />
-    <Content Include="Areas\admin\Views\Home\SaveRedirect.cshtml" />
-    <Content Include="Areas\admin\Views\Home\AddSubject.cshtml" />
-    <Content Include="Areas\admin\Views\Home\CreateSubject.cshtml" />
-    <Content Include="Areas\admin\Views\Home\GetChapters.cshtml" />
     <None Include="Properties\PublishProfiles\CustomProfile.pubxml" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -743,247 +815,6 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\popper-1-14-6-min.js" />
-    <Content Include="tools\gpac\avcodec-55.dll" />
-    <Content Include="tools\gpac\avdevice-55.dll" />
-    <Content Include="tools\gpac\avfilter-4.dll" />
-    <Content Include="tools\gpac\avformat-55.dll" />
-    <Content Include="tools\gpac\avresample-1.dll" />
-    <Content Include="tools\gpac\avutil-52.dll" />
-    <Content Include="tools\gpac\Changelog.txt" />
-    <Content Include="tools\gpac\configuration.html" />
-    <Content Include="tools\gpac\dashcast.exe" />
-    <Content Include="tools\gpac\gm_aac_in.dll" />
-    <Content Include="tools\gpac\gm_ac3_in.dll" />
-    <Content Include="tools\gpac\gm_bifs_dec.dll" />
-    <Content Include="tools\gpac\gm_ctx_load.dll" />
-    <Content Include="tools\gpac\gm_dummy_in.dll" />
-    <Content Include="tools\gpac\gm_dx_hw.dll" />
-    <Content Include="tools\gpac\gm_ffmpeg_in.dll" />
-    <Content Include="tools\gpac\gm_ft_font.dll" />
-    <Content Include="tools\gpac\gm_gdip_raster.dll" />
-    <Content Include="tools\gpac\gm_gpac_js.dll" />
-    <Content Include="tools\gpac\gm_img_in.dll" />
-    <Content Include="tools\gpac\gm_ismacryp.dll" />
-    <Content Include="tools\gpac\gm_isom_in.dll" />
-    <Content Include="tools\gpac\gm_laser_dec.dll" />
-    <Content Include="tools\gpac\gm_mp3_in.dll" />
-    <Content Include="tools\gpac\gm_mpd_in.dll" />
-    <Content Include="tools\gpac\gm_mpegts_in.dll" />
-    <Content Include="tools\gpac\gm_mse_in.dll" />
-    <Content Include="tools\gpac\gm_odf_dec.dll" />
-    <Content Include="tools\gpac\gm_ogg.dll" />
-    <Content Include="tools\gpac\gm_openhevc_dec.dll" />
-    <Content Include="tools\gpac\gm_opensvc_dec.dll" />
-    <Content Include="tools\gpac\gm_platinum.dll" />
-    <Content Include="tools\gpac\gm_rtp_in.dll" />
-    <Content Include="tools\gpac\gm_saf_in.dll" />
-    <Content Include="tools\gpac\gm_soft_raster.dll" />
-    <Content Include="tools\gpac\gm_svg_in.dll" />
-    <Content Include="tools\gpac\gm_timedtext.dll" />
-    <Content Include="tools\gpac\gm_vtt_in.dll" />
-    <Content Include="tools\gpac\gm_wav_out.dll" />
-    <Content Include="tools\gpac\gm_widgetman.dll" />
-    <Content Include="tools\gpac\gm_xvid_dec.dll" />
-    <Content Include="tools\gpac\gpac.mp4" />
-    <Content Include="tools\gpac\GPAX.dll" />
-    <Content Include="tools\gpac\gui\extensions\bifs_tests\applications-other.svg" />
-    <Content Include="tools\gpac\gui\extensions\bifs_tests\bifs_tests.js" />
-    <Content Include="tools\gpac\gui\extensions\bifs_tests\init.js" />
-    <Content Include="tools\gpac\gui\extensions\H2B2VS\h2b2vs.js" />
-    <Content Include="tools\gpac\gui\extensions\H2B2VS\H2B2VS.png" />
-    <Content Include="tools\gpac\gui\extensions\H2B2VS\init.js" />
-    <Content Include="tools\gpac\gui\extensions\H2B2VS\logo_hd.png" />
-    <Content Include="tools\gpac\gui\extensions\H2B2VS\logo_uhd.png" />
-    <Content Include="tools\gpac\gui\extensions\player\applications-multimedia.svg" />
-    <Content Include="tools\gpac\gui\extensions\player\fileopen.js" />
-    <Content Include="tools\gpac\gui\extensions\player\init.js" />
-    <Content Include="tools\gpac\gui\extensions\player\player.js" />
-    <Content Include="tools\gpac\gui\extensions\player\playlist.js" />
-    <Content Include="tools\gpac\gui\extensions\player\stats.js" />
-    <Content Include="tools\gpac\gui\extensions\showroom\init.js" />
-    <Content Include="tools\gpac\gui\extensions\showroom\showroom.js" />
-    <Content Include="tools\gpac\gui\extensions\widget_manager\applications-system.svg" />
-    <Content Include="tools\gpac\gui\extensions\widget_manager\init.js" />
-    <Content Include="tools\gpac\gui\gui.js" />
-    <Content Include="tools\gpac\gui\gwlib.js" />
-    <Content Include="tools\gpac\gui\icons\add.svg" />
-    <Content Include="tools\gpac\gui\icons\app.svg" />
-    <Content Include="tools\gpac\gui\icons\audio.svg" />
-    <Content Include="tools\gpac\gui\icons\audio_full.svg" />
-    <Content Include="tools\gpac\gui\icons\audio_mute.svg" />
-    <Content Include="tools\gpac\gui\icons\check.svg" />
-    <Content Include="tools\gpac\gui\icons\close.svg" />
-    <Content Include="tools\gpac\gui\icons\compass.svg" />
-    <Content Include="tools\gpac\gui\icons\cross.svg" />
-    <Content Include="tools\gpac\gui\icons\down.svg" />
-    <Content Include="tools\gpac\gui\icons\expand.svg" />
-    <Content Include="tools\gpac\gui\icons\file.svg" />
-    <Content Include="tools\gpac\gui\icons\film.svg" />
-    <Content Include="tools\gpac\gui\icons\folder.svg" />
-    <Content Include="tools\gpac\gui\icons\harddrive.svg" />
-    <Content Include="tools\gpac\gui\icons\heart.svg" />
-    <Content Include="tools\gpac\gui\icons\home.svg" />
-    <Content Include="tools\gpac\gui\icons\image.svg" />
-    <Content Include="tools\gpac\gui\icons\info.svg" />
-    <Content Include="tools\gpac\gui\icons\laptop.svg" />
-    <Content Include="tools\gpac\gui\icons\left.svg" />
-    <Content Include="tools\gpac\gui\icons\list.svg" />
-    <Content Include="tools\gpac\gui\icons\live.svg" />
-    <Content Include="tools\gpac\gui\icons\media_next.svg" />
-    <Content Include="tools\gpac\gui\icons\media_prev.svg" />
-    <Content Include="tools\gpac\gui\icons\monitor.svg" />
-    <Content Include="tools\gpac\gui\icons\more.svg" />
-    <Content Include="tools\gpac\gui\icons\musical.svg" />
-    <Content Include="tools\gpac\gui\icons\navigation.svg" />
-    <Content Include="tools\gpac\gui\icons\network.svg" />
-    <Content Include="tools\gpac\gui\icons\next.svg" />
-    <Content Include="tools\gpac\gui\icons\osmo.svg" />
-    <Content Include="tools\gpac\gui\icons\overflowing.svg" />
-    <Content Include="tools\gpac\gui\icons\pause.svg" />
-    <Content Include="tools\gpac\gui\icons\play.svg" />
-    <Content Include="tools\gpac\gui\icons\play_loop.svg" />
-    <Content Include="tools\gpac\gui\icons\play_shuffle.svg" />
-    <Content Include="tools\gpac\gui\icons\play_single.svg" />
-    <Content Include="tools\gpac\gui\icons\pl_next.svg" />
-    <Content Include="tools\gpac\gui\icons\pl_prev.svg" />
-    <Content Include="tools\gpac\gui\icons\power.svg" />
-    <Content Include="tools\gpac\gui\icons\previous.svg" />
-    <Content Include="tools\gpac\gui\icons\remove.svg" />
-    <Content Include="tools\gpac\gui\icons\resize.svg" />
-    <Content Include="tools\gpac\gui\icons\rewind.svg" />
-    <Content Include="tools\gpac\gui\icons\right.svg" />
-    <Content Include="tools\gpac\gui\icons\seek_forward.svg" />
-    <Content Include="tools\gpac\gui\icons\shrink.svg" />
-    <Content Include="tools\gpac\gui\icons\sort.svg" />
-    <Content Include="tools\gpac\gui\icons\speed.svg" />
-    <Content Include="tools\gpac\gui\icons\star.svg" />
-    <Content Include="tools\gpac\gui\icons\stop.svg" />
-    <Content Include="tools\gpac\gui\icons\stop2.svg" />
-    <Content Include="tools\gpac\gui\icons\trash.svg" />
-    <Content Include="tools\gpac\gui\icons\tray.svg" />
-    <Content Include="tools\gpac\gui\icons\tv.svg" />
-    <Content Include="tools\gpac\gui\icons\up.svg" />
-    <Content Include="tools\gpac\gui\icons\world.svg" />
-    <Content Include="tools\gpac\gui\mpegu-core.js" />
-    <Content Include="tools\gpac\gui\webvtt-renderer.js" />
-    <Content Include="tools\gpac\js.dll" />
-    <Content Include="tools\gpac\libeay32.dll" />
-    <Content Include="tools\gpac\libgpac.dll" />
-    <Content Include="tools\gpac\libLibOpenHevcWrapper.dll" />
-    <Content Include="tools\gpac\libx264-142.dll" />
-    <Content Include="tools\gpac\License.txt" />
-    <Content Include="tools\gpac\mfc100.dll" />
-    <Content Include="tools\gpac\mp42ts.exe" />
-    <Content Include="tools\gpac\mp4box.exe" />
-    <Content Include="tools\gpac\mp4client.exe" />
-    <Content Include="tools\gpac\msvcr100.dll" />
-    <Content Include="tools\gpac\OpenSVCDecoder.dll" />
-    <Content Include="tools\gpac\osmo4.ico" />
-    <Content Include="tools\gpac\ReadMe.txt" />
-    <Content Include="tools\gpac\sdk\include\gpac\ait.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\avparse.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\base_coding.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\bifs.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\bitstream.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\cache.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\color.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\compositor.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\configuration.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\config_file.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\constants.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\crypt.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\dash.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\download.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\dsmcc.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\dvb_mpe.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\esi.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\events.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\events_constants.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\filestreamer.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\html5_media.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\html5_mse.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\ietf.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\avilib.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\bifs_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\bifs_tables.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\camera.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\compositor_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\crypt_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\dvb_mpe_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\ietf_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\isomedia_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\laser_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\m3u8.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\media_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\mesh.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\mpd.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\odf_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\odf_parse_common.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\ogg.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\reedsolomon.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\scenegraph_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\smjs_api.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\swf_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\terminal_dev.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\internal\vobsub.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\ismacryp.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\iso639.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\isomedia.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\laser.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\list.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\map.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\maths.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\mediaobject.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\media_tools.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\module.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\audio_out.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\codec.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\font.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\hardcoded_proto.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\ipmp.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\js_usr.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\raster2d.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\service.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\term_ext.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\modules\video_out.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\mpeg4_odf.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\mpegts.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\network.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\nodes_mpeg4.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\nodes_svg.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\nodes_x3d.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\nodes_xbl.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\options.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\path2d.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\revision.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\ringbuffer.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\rtp_streamer.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\scenegraph.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\scenegraph_svg.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\scenegraph_vrml.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\scene_engine.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\scene_manager.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\setup.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\svg_types.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\sync_layer.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\terminal.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\term_info.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\thread.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\token.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\tools.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\unicode.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\user.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\utf.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\version.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\webvtt.h" />
-    <Content Include="tools\gpac\sdk\include\gpac\xml.h" />
-    <Content Include="tools\gpac\sdk\include\win32\inttypes.h" />
-    <Content Include="tools\gpac\sdk\include\win32\stdint.h" />
-    <Content Include="tools\gpac\sdk\include\wince\errno.h" />
-    <Content Include="tools\gpac\ssleay32.dll" />
-    <Content Include="tools\gpac\swresample-0.dll" />
-    <Content Include="tools\gpac\swscale-2.dll" />
-    <Content Include="tools\gpac\uninstall.exe" />
     <Content Include="videos\02eda72eb47247f09351aa997a100ff1\videoplayback.mp4" />
     <Content Include="videos\02eda72eb47247f09351aa997a100ff1\videoplayback_dashinit.mp4" />
     <Content Include="videos\043e4234a43340689ae1c3d23db5a760\UthixoUyathembakala270.mp4" />
@@ -1317,19 +1148,11 @@
     <Content Include="Views\Video\_GetRelated.cshtml" />
     <Content Include="Views\Blog\GetPost.cshtml" />
     <Content Include="Views\Blog\GetPosts.cshtml" />
-    <Content Include="Scripts\jquery-3.3.1.slim.min.map" />
-    <Content Include="Scripts\jquery-3.3.1.min.map" />
     <Content Include="vidosads.xsc">
-      <DependentUpon>vidosads.xsd</DependentUpon>
+      <DependentUpon>---vidosads.dataxsd</DependentUpon>
     </Content>
     <Content Include="subtitles.srt" />
     <Content Include="subtitlevtt.vtt" />
-    <Content Include="tools\gpac\gui\extensions\showroom\osmo.bt" />
-    <Content Include="tools\gpac\gui\gui.bt" />
-    <Content Include="tools\gpac\sdk\lib\js.lib" />
-    <Content Include="tools\gpac\sdk\lib\libgpac.lib" />
-    <Content Include="tools\gpac\shaders\fragment.glsl" />
-    <Content Include="tools\gpac\shaders\vertex.glsl" />
     <Content Include="videos\02eda72eb47247f09351aa997a100ff1\videoplayback_dash.mpd" />
     <Content Include="videos\043e4234a43340689ae1c3d23db5a760\UthixoUyathembakala270_dash.mpd" />
     <Content Include="videos\06d3831c40204ee0aa252b171a853685\videoplayback_dash.mpd" />
@@ -1676,13 +1499,15 @@
     <Content Include="videos\Yht0YsTywSrZALg5R95RuBMDdMkZFoKa4KSiTAyljMBzw8FhQg\file_dashed.mpd" />
     <Content Include="videos\Yht0YsTywSrZALg5R95RuBMDdMkZFoKa4KSiTAyljMBzw8FhQg\Preview\file_dashed.mpd" />
     <Content Include="videos\ZyPB5QnZZaL7NFRe4rwhjrI7gkrW511kshX3c7mhiRaLW3mho6sSiD9nSvq04ptLta4X0dJLv7C71OZxNXQ\file_dashed.mpd" />
-    <None Include="vidosads.xsd">
+    <Content Include="Scripts\jquery-3.3.1.slim.min.map" />
+    <Content Include="Scripts\jquery-3.3.1.min.map" />
+    <None Include="---vidosads.dataxsd">
       <SubType>Designer</SubType>
       <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>vidosads.Designer.cs</LastGenOutput>
+      <LastGenOutput>---vidosads.Designer.cs</LastGenOutput>
     </None>
     <Content Include="vidosads.xss">
-      <DependentUpon>vidosads.xsd</DependentUpon>
+      <DependentUpon>---vidosads.dataxsd</DependentUpon>
     </Content>
     <Content Include="Views\Blog\GetRelatedPost.cshtml" />
     <Content Include="Views\Blog\GetComments.cshtml" />
@@ -1704,7 +1529,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="EmailLists\" />
-    <Folder Include="tools\gpac\cache\" />
+    <Folder Include="tools\" />
     <Folder Include="videos\38efed8538d045d1b026162198bf42d1\" />
     <Folder Include="videos\3be9e44ba2e649e7b10e472b44148705\" />
     <Folder Include="videos\4c08abbfe7774565b0fb92634544fcc5\" />
@@ -1860,11 +1685,14 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\..\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
-    <Error Condition="!Exists('..\..\..\..\..\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\Administrator\source\repos\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <!--<Error Condition="!Exists('..\..\..\..\..\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />-->
+    <!--<Error Condition="!Exists('..\..\..\..\..\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\Administrator\source\repos\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />-->
   </Target>
   <Import Project="..\..\..\..\..\Administrator\source\repos\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('..\..\..\..\..\Administrator\source\repos\vidosa\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets')" />
+  <Import Project="..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('..\packages\Microsoft.Build.Tasks.Git.1.0.0\build\Microsoft.Build.Tasks.Git.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

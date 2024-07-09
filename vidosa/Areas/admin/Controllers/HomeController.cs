@@ -7,10 +7,11 @@ using vidosa.Areas.admin.Models;
 using vidosa.Models;
 using System.Data.Entity;
 using System.Web.Routing;
+using Microsoft.AspNet.Identity;
 
 namespace vidosa.Areas.admin.Controllers
 {
-    [Authorize(Users = "smonaila@gmail.com")]
+    [Authorize(Users = "smonaila@hotmail.com")]
     public class HomeController : Controller
     {
         // /admin/Home/DeletePost?purl={0}&IsDeleted={1}

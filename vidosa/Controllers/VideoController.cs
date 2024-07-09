@@ -253,7 +253,7 @@ namespace vidosa.Controllers
             }
         }
 
-        [MvcAuthorize(Users = "smonaila@gmail.com")]
+        [MvcAuthorize(Users = "smonaila@hotmail.com")]
         public ActionResult FileToUpload()
         {
             return View();
@@ -380,7 +380,7 @@ namespace vidosa.Controllers
                                 ProcessStartInfo processStartInfo = new ProcessStartInfo();
 
                                 processStartInfo.FileName = string.Format("{0}", Server.MapPath("/tools/gpac/mp4box.exe"));
-                                processStartInfo.Arguments = string.Format("-dash 1000 -rap -frag -rap {0}", Server.MapPath(string.Format("{0}\\{1}", video.Path, FileName)));
+                                processStartInfo.Arguments = string.Format("-dash 1000 -rap {0}", Server.MapPath(string.Format("{0}\\{1}", video.Path, FileName)));
                                 processStartInfo.ErrorDialog = false;
                                 processStartInfo.RedirectStandardError = false;
                                 processStartInfo.RedirectStandardInput = false;
@@ -1100,8 +1100,9 @@ namespace vidosa.Controllers
 
             XDocument xDocument = XDocument.Load(mpdFile).Document;
             XNamespace xNamespace = xDocument.Root.GetDefaultNamespace();
-            XElement Period = xDocument.Descendants(xNamespace + "Period").Where(p => p.Attribute("type").Value == "video").FirstOrDefault();
-            IEnumerable<XElement> Representations = Period.Descendants(xNamespace + "Representation");
+            List<XElement> Periods = xDocument.Descendants(xNamespace + "Period").ToList();
+            XElement currentPeriod = Periods.Where(p => p.Attribute("type").Value == "video").FirstOrDefault();
+            IEnumerable<XElement> Representations = Periods.Descendants(xNamespace + "Representation");
 
             var fileUrl = (from rep in Representations
                            where Convert.ToInt32(rep.Attribute("id").Value) == representationId

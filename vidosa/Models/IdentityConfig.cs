@@ -107,7 +107,7 @@ namespace vidosa.Models
                     List<CachedUser> cachedUsers = (List<CachedUser>)httpContextBase.Cache["cachedUsers"];
                     CachedUser currentUser = cachedUsers is null ? null : cachedUsers.Find(u => u.Email == httpContextBase.User.Identity.Name);
 
-                    if (currentUser is null)
+                    if (currentUser is null && httpContextBase.User.Identity.IsAuthenticated)
                     {
                         ApplicationUser user = vidosaContext.Users.ToList().Find(u => u.Email == httpContextBase.User.Identity.Name);
                         currentUser = new CachedUser();
@@ -127,7 +127,6 @@ namespace vidosa.Models
                         {
                             cachedUsers.Add(currentUser);
                         }
-
                     }
                     return currentUser;
                 }

@@ -1572,7 +1572,86 @@
         };
     };
     Source_Buffer.prototype = new Source_Buffer();
-  
+
+    // Error Handlinng
+    function TypeNotSupported(message = "", name = "CodingTypeNotSupported") {
+        this.message = message;
+        this.name = name;
+    }
+    Error.prototype.error = function (name, message) {
+        parentWindow.pausePlayStream("playerErrorCall");
+        var videlemcon = document.getElementById("videlemcon");
+        var loadingImage = document.getElementsByClassName("loading-img")[0];
+        loadingImage.style.display = "none";
+
+        var errormessageDiv = document.createElement("div");
+        var errorheader = document.createElement("h5");
+        var errormessageCon = document.createElement("div");
+        var errorbodyCon = document.createElement("div");
+        var messagelabel = document.createElement("span");
+        var messagetitle = document.createElement("span");
+        var labeltitleCon = document.createElement("div");
+        var warningSignCon = document.createElement("span");
+        var messagetitleCon = document.createElement("div");
+        var messagelabel_ = document.createElement("span");
+        var messagetitle_ = document.createElement("span");
+
+        // Set Attributes and properties for the errormessage and messagetitle span.
+        messagelabel.className = "messagelabel";
+        messagelabel.innerHTML = "Error Name: ";
+        messagetitle.className = "messagetitle";
+        messagetitle.innerHTML = name;
+
+        messagelabel_.className = "messagelabel";
+        messagelabel_.innerHTML = "Message: ";
+        messagetitle_.className = "messagelabel";
+        messagetitle_.innerHTML = message;
+
+        // Set Attributes and properties for the errormessage div.
+        errormessageDiv.className = "errormessage";
+        errormessageDiv.setAttribute("id", "errorMessage");
+
+        // Set Attributes and properties for the error body div.
+        errorbodyCon.className = "errorbody";
+
+        // Set Attributes and properties for the warning sign span.
+        warningSignCon.className = "glyphicon glyphicon-warning-sign";
+
+        // Set Attributes and properties for the error header (h5).
+        errorheader.className = "errorheader";
+        errorheader.appendChild(warningSignCon);
+        errorheader.append(" Error");
+
+        errormessageCon.className = "errormessagecon";
+        errormessageCon.appendChild(messagelabel);
+
+        errormessageCon.appendChild(messagetitle);
+
+        // Set the attributes and properties of the labeltitleCon div.
+        labeltitleCon.className = "errorcontentCon";
+        labeltitleCon.appendChild(messagelabel);
+        labeltitleCon.appendChild(messagetitle);
+
+        errorbodyCon.appendChild(labeltitleCon);
+
+
+        // append the the messagelabe and messagetitle span with the new values.
+        messagetitleCon.className = "errorcontentCon";
+        messagetitleCon.appendChild(messagelabel_);
+        messagetitleCon.appendChild(messagetitle_);
+
+        errorbodyCon.appendChild(messagetitleCon);
+
+        errormessageDiv.appendChild(errorbodyCon);
+
+        // Create the retry anchor
+        var retry = document.createElement("a");
+        retry.classList = "btn btn-primary";
+        retry.setAttribute("href", "/");
+
+        videlemcon.appendChild(errormessageDiv);
+    };
+    TypeNotSupported.prototype = Error.prototype;
 
     // Custom MediaSource.
     function Media_Source() {
@@ -1595,15 +1674,21 @@
                 var isIOSChrome = winNav.userAgent.match("CriOS");
 
                 var representation = fileDetails.mpdFile.querySelector("Representation");
+                var adaptationSet = fileDetails.mpdFile.querySelector("AdaptationSet");
+              
                 var fileName = fileDetails.mpdFile.querySelector("BaseURL");
-                var mimeType = representation.getAttribute("mimeType");
+                var mimeType = adaptationSet.getAttribute("mimType");
                 var codecs = representation.getAttribute("codecs");
                 var encodings = mimeType + ';codecs="' + codecs + '"';
 
-                sourceBuffer.codecs = encodings;
-                
-                sourceBuffer.fileName = fileName.innerHTML;
-                console.log("Codecs: " + sourceBuffer.codecs);
+                if (MediaSource.isTypeSupported(encodings)) {
+                    sourceBuffer.codecs = encodings;
+                    sourceBuffer.fileName = fileName.innerHTML;
+                    console.log("Codecs: " + sourceBuffer.codecs);
+                }
+                else {
+                    throw new TypeNotSupported("Codec not supported", "CodingTypeNotSupported");   
+                    }                
 
                 if (isIOSChrome) {
                     // is Google Chrome on IOS                              
@@ -1632,7 +1717,11 @@
                 return sourceBuffer.sourceBuffer;
             } catch (e) {
                 if (e instanceof Error) {
-                    console.log("ErroName: " + e.name + " ErrorMessage: " + e.message + " ErrorStack: " + e.stack);
+                    if (e.name === "CodingTypeNotSupported") {
+                        e.error("CodingTypeNotSupported", "There was an error during parsing of an mpd file.");
+                    } else {
+                        alert("Something Happened during adding a sourceBuffer");
+                    }
                 }
             }
         }
